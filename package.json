@@ -1,0 +1,17 @@
+{
+  "name": "incident-ai",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "demo-app"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace=api",
+    "dev:dashboard": "npm run dev --workspace=dashboard",
+    "dev:demo": "npm run dev --workspace=demo-app"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.next/
+apps/api/src/generated/
+*.tsbuildinfo
+*.log
+.env
+!.env.example
+apps/api/.env

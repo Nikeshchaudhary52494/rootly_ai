@@ -3,6 +3,9 @@ import type {
   ApiKeyMetadata,
   Environment,
   EnvironmentType,
+  ErrorEventDetail,
+  ErrorEventSummary,
+  Paginated,
   Project,
 } from '@incident-ai/shared';
 
@@ -54,4 +57,19 @@ export const api = {
     ),
   revokeApiKey: (apiKeyId: string) =>
     request<ApiKeyMetadata>(`/api-keys/${apiKeyId}/revoke`, { method: 'POST' }),
+
+  listEvents: (
+    projectId: string,
+    params: { environmentId?: string; limit?: number; offset?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.environmentId) query.set('environmentId', params.environmentId);
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.offset) query.set('offset', String(params.offset));
+    const qs = query.toString();
+    return request<Paginated<ErrorEventSummary>>(
+      `/projects/${projectId}/events${qs ? `?${qs}` : ''}`,
+    );
+  },
+  getEvent: (eventId: string) => request<ErrorEventDetail>(`/events/${eventId}`),
 };

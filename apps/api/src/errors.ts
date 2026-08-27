@@ -2,8 +2,10 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 const STATUS_TEXT: Record<number, string> = {
   400: 'Bad Request',
+  401: 'Unauthorized',
   404: 'Not Found',
   409: 'Conflict',
+  413: 'Payload Too Large',
   503: 'Service Unavailable',
 };
 
@@ -29,6 +31,10 @@ export function conflict(message: string) {
 
 export function badRequest(message: string | string[]) {
   return new AppError(400, message);
+}
+
+export function unauthorized(message: string) {
+  return new AppError(401, message);
 }
 
 export function statusText(code: number) {

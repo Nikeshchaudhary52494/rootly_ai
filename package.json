@@ -9,7 +9,10 @@
   "scripts": {
     "dev:api": "npm run start:dev --workspace=api",
     "dev:dashboard": "npm run dev --workspace=dashboard",
-    "dev:demo": "npm run dev --workspace=demo-app"
+    "dev:demo": "npm run dev --workspace=demo-app",
+    "build:sdk": "npm run build --workspace=@incident-ai/node",
+    "test:api": "npm test --workspace=api",
+    "test:sdk": "npm test --workspace=@incident-ai/node"
   },
   "overrides": {
     "deepmerge-ts": "8.0.2"

@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { prisma } from '../prisma';
 import { EnvironmentType } from '../generated/prisma/client';
 import { notFound, wrap } from '../errors';
 import { requireString } from '../validate';
+import { hashApiKey } from '../api-key-hash';
 
 export const apiKeysRouter = Router();
 
@@ -17,10 +18,6 @@ const API_KEY_SELECT = {
   lastUsedAt: true,
   revokedAt: true,
 };
-
-function hashKey(rawKey: string) {
-  return createHash('sha256').update(rawKey).digest('hex');
-}
 
 function generateRawKey(type: EnvironmentType) {
   const segment = type === EnvironmentType.PRODUCTION ? 'live' : 'dev';
@@ -42,7 +39,7 @@ apiKeysRouter.post(
     if (!environment) throw notFound('Environment not found');
 
     const { fullKey, keyPrefix } = generateRawKey(environment.type);
-    const keyHash = hashKey(fullKey);
+    const keyHash = hashApiKey(fullKey);
 
     const apiKey = await prisma.apiKey.create({
       data: { projectId, environmentId, name, keyPrefix, keyHash },
@@ -80,7 +77,7 @@ apiKeysRouter.post(
   '/api-keys/validate',
   wrap(async (req, res) => {
     const rawKey = requireString(req.body, 'apiKey');
-    const keyHash = hashKey(rawKey);
+    const keyHash = hashApiKey(rawKey);
     const apiKey = await prisma.apiKey.findUnique({ where: { keyHash } });
 
     if (!apiKey || apiKey.revokedAt) {

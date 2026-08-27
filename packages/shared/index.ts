@@ -34,3 +34,33 @@ export interface ApiKeyCreated extends ApiKeyMetadata {
   apiKey: string;
   message: string;
 }
+
+export interface ErrorEventSummary {
+  id: string;
+  eventId: string;
+  projectId: string;
+  environmentId: string;
+  serviceName: string;
+  environmentName: string;
+  release: string | null;
+  errorName: string;
+  errorMessage: string;
+  timestamp: string;
+  receivedAt: string;
+}
+
+export interface ErrorEventDetail extends ErrorEventSummary {
+  apiKeyId: string;
+  stackTrace: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}

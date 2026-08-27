@@ -61,9 +61,17 @@ export default function ProjectDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{project.name}</h1>
-        <p className="mt-1 font-mono text-sm text-black/50 dark:text-white/50">{project.slug}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">{project.name}</h1>
+          <p className="mt-1 font-mono text-sm text-black/50 dark:text-white/50">{project.slug}</p>
+        </div>
+        <Link
+          href={`/projects/${projectId}/events`}
+          className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+        >
+          Error Events →
+        </Link>
       </div>
 
       <div className="flex gap-1 border-b border-black/10 dark:border-white/10">

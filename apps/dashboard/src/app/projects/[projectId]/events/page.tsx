@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Environment, ErrorEventSummary } from '@incident-ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
@@ -12,6 +13,7 @@ export default function ProjectEventsPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = use(params);
+  const router = useRouter();
   const [events, setEvents] = useState<ErrorEventSummary[]>([]);
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [environmentId, setEnvironmentId] = useState<string>('');
@@ -74,10 +76,15 @@ export default function ProjectEventsPage({
 
       <div className="flex flex-col divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
         {events.map((event) => (
-          <Link
+          <div
             key={event.id}
-            href={`/events/${event.id}`}
-            className="flex flex-col gap-2 px-4 py-4 hover:bg-black/5 dark:hover:bg-white/5"
+            role="link"
+            tabIndex={0}
+            onClick={() => router.push(`/events/${event.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') router.push(`/events/${event.id}`);
+            }}
+            className="flex cursor-pointer flex-col gap-2 px-4 py-4 hover:bg-black/5 dark:hover:bg-white/5"
           >
             <div className="flex items-center justify-between">
               <span className="font-mono text-sm font-semibold text-red-600">{event.errorName}</span>
@@ -98,8 +105,22 @@ export default function ProjectEventsPage({
                   Release: <span className="font-mono">{event.release}</span>
                 </span>
               )}
+              <span>
+                Incident:{' '}
+                {event.incident ? (
+                  <Link
+                    href={`/incidents/${event.incident.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-mono text-black/70 underline hover:text-black dark:text-white/70 dark:hover:text-white"
+                  >
+                    INC-{event.incident.sequenceNumber}
+                  </Link>
+                ) : (
+                  <span className="font-mono">Unassigned</span>
+                )}
+              </span>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

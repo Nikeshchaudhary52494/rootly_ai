@@ -35,6 +35,14 @@ export interface ApiKeyCreated extends ApiKeyMetadata {
   message: string;
 }
 
+export type IncidentStatus = 'OPEN' | 'RESOLVED' | 'IGNORED';
+
+export interface IncidentRef {
+  id: string;
+  sequenceNumber: number;
+  status: IncidentStatus;
+}
+
 export interface ErrorEventSummary {
   id: string;
   eventId: string;
@@ -47,13 +55,50 @@ export interface ErrorEventSummary {
   errorMessage: string;
   timestamp: string;
   receivedAt: string;
+  incident: IncidentRef | null;
 }
 
 export interface ErrorEventDetail extends ErrorEventSummary {
   apiKeyId: string;
   stackTrace: string | null;
+  fingerprint: string;
   metadata: unknown;
   createdAt: string;
+}
+
+export interface IncidentSummary {
+  id: string;
+  sequenceNumber: number;
+  title: string;
+  errorName: string;
+  errorMessage: string;
+  status: IncidentStatus;
+  occurrenceCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  environment: { id: string; name: string };
+}
+
+export interface IncidentDetail {
+  id: string;
+  projectId: string;
+  environmentId: string;
+  sequenceNumber: number;
+  fingerprint: string;
+  title: string;
+  errorName: string;
+  errorMessage: string;
+  status: IncidentStatus;
+  occurrenceCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  latestEventId: string;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  environment: { id: string; name: string };
+  latestEvent: ErrorEventDetail | null;
+  recentEvents: ErrorEventDetail[];
 }
 
 export interface Paginated<T> {

@@ -5,6 +5,7 @@ import { projectsRouter } from './routes/projects';
 import { environmentsRouter } from './routes/environments';
 import { apiKeysRouter } from './routes/api-keys';
 import { eventsRouter } from './routes/events';
+import { incidentsRouter } from './routes/incidents';
 import { AppError, statusText } from './errors';
 
 export const app = express();
@@ -17,6 +18,7 @@ app.use(projectsRouter);
 app.use(environmentsRouter);
 app.use(apiKeysRouter);
 app.use(eventsRouter);
+app.use(incidentsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ statusCode: 404, message: `Cannot ${req.method} ${req.path}` });

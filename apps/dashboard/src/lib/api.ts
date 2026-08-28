@@ -5,6 +5,9 @@ import type {
   EnvironmentType,
   ErrorEventDetail,
   ErrorEventSummary,
+  IncidentDetail,
+  IncidentStatus,
+  IncidentSummary,
   Paginated,
   Project,
 } from '@incident-ai/shared';
@@ -72,4 +75,30 @@ export const api = {
     );
   },
   getEvent: (eventId: string) => request<ErrorEventDetail>(`/events/${eventId}`),
+
+  listIncidents: (
+    projectId: string,
+    params: { environmentId?: string; status?: IncidentStatus; limit?: number; offset?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.environmentId) query.set('environmentId', params.environmentId);
+    if (params.status) query.set('status', params.status);
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.offset) query.set('offset', String(params.offset));
+    const qs = query.toString();
+    return request<Paginated<IncidentSummary>>(`/projects/${projectId}/incidents${qs ? `?${qs}` : ''}`);
+  },
+  getIncident: (incidentId: string) => request<IncidentDetail>(`/incidents/${incidentId}`),
+  listIncidentEvents: (incidentId: string, params: { limit?: number; offset?: number } = {}) => {
+    const query = new URLSearchParams();
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.offset) query.set('offset', String(params.offset));
+    const qs = query.toString();
+    return request<Paginated<ErrorEventDetail>>(`/incidents/${incidentId}/events${qs ? `?${qs}` : ''}`);
+  },
+  updateIncidentStatus: (incidentId: string, status: IncidentStatus) =>
+    request<IncidentDetail>(`/incidents/${incidentId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
 };

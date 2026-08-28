@@ -37,6 +37,26 @@ app.get('/manual-error', (_req, res) => {
   }
 });
 
+// Same logical error, different user id each call — should normalize into one incident.
+app.get('/test-dynamic-error/:userId', (req, res) => {
+  try {
+    throw new Error(`User ${req.params.userId} not found`);
+  } catch (error) {
+    incidentAI.captureException(error);
+    res.status(404).json({ error: 'User not found' });
+  }
+});
+
+// Unrelated error — should create a separate incident from /test-error and /test-dynamic-error.
+app.get('/test-different-error', (_req, res) => {
+  try {
+    throw new Error('Payment gateway unavailable');
+  } catch (error) {
+    incidentAI.captureException(error);
+    res.status(503).json({ error: 'Payment gateway unavailable' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Demo app listening on http://localhost:${port}`);
 });

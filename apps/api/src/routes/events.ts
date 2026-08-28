@@ -3,6 +3,8 @@ import { prisma } from '../prisma';
 import { Prisma } from '../generated/prisma/client';
 import { apiKeyAuth } from '../middleware/api-key-auth';
 import { badRequest, notFound, wrap } from '../errors';
+import { generateFingerprint } from '../incidents/utils/fingerprint';
+import { recordIncidentForEvent } from '../incidents/incidents.service';
 
 export const eventsRouter = Router();
 
@@ -88,21 +90,38 @@ eventsRouter.post(
     const { projectId, environmentId, apiKeyId } = req.incidentApiKey!;
     const parsed = parseEventPayload(req.body);
 
+    const fingerprint = generateFingerprint(parsed.errorName, parsed.errorMessage, parsed.stackTrace);
+
     try {
-      const event = await prisma.errorEvent.create({
-        data: {
+      const event = await prisma.$transaction(async (tx) => {
+        const created = await tx.errorEvent.create({
+          data: {
+            projectId,
+            environmentId,
+            apiKeyId,
+            eventId: parsed.eventId,
+            serviceName: parsed.serviceName,
+            environmentName: parsed.environmentName,
+            release: parsed.release,
+            errorName: parsed.errorName,
+            errorMessage: parsed.errorMessage,
+            stackTrace: parsed.stackTrace,
+            fingerprint,
+            timestamp: parsed.timestamp,
+          },
+        });
+
+        const incidentId = await recordIncidentForEvent(tx, {
           projectId,
           environmentId,
-          apiKeyId,
-          eventId: parsed.eventId,
-          serviceName: parsed.serviceName,
-          environmentName: parsed.environmentName,
-          release: parsed.release,
           errorName: parsed.errorName,
           errorMessage: parsed.errorMessage,
           stackTrace: parsed.stackTrace,
           timestamp: parsed.timestamp,
-        },
+          eventId: created.id,
+        });
+
+        return tx.errorEvent.update({ where: { id: created.id }, data: { incidentId } });
       });
       res.status(201).json({ success: true, eventId: event.eventId });
     } catch (err) {
@@ -149,6 +168,7 @@ eventsRouter.get(
           errorMessage: true,
           timestamp: true,
           receivedAt: true,
+          incident: { select: { id: true, sequenceNumber: true, status: true } },
         },
       }),
       prisma.errorEvent.count({ where }),
@@ -161,7 +181,10 @@ eventsRouter.get(
 eventsRouter.get(
   '/events/:eventId',
   wrap(async (req, res) => {
-    const event = await prisma.errorEvent.findUnique({ where: { id: req.params.eventId } });
+    const event = await prisma.errorEvent.findUnique({
+      where: { id: req.params.eventId },
+      include: { incident: { select: { id: true, sequenceNumber: true, status: true } } },
+    });
     if (!event) throw notFound('Event not found');
     res.json(event);
   }),

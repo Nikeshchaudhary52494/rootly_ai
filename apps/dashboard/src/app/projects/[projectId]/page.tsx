@@ -66,12 +66,20 @@ export default function ProjectDetailPage({
           <h1 className="text-2xl font-semibold">{project.name}</h1>
           <p className="mt-1 font-mono text-sm text-black/50 dark:text-white/50">{project.slug}</p>
         </div>
-        <Link
-          href={`/projects/${projectId}/events`}
-          className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-        >
-          Error Events →
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/projects/${projectId}/incidents`}
+            className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+          >
+            Incidents →
+          </Link>
+          <Link
+            href={`/projects/${projectId}/events`}
+            className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+          >
+            Error Events →
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-1 border-b border-black/10 dark:border-white/10">

@@ -53,6 +53,20 @@ export default function EventDetailPage({
         <Field label="Received At" value={new Date(event.receivedAt).toLocaleString()} />
       </div>
 
+      <div className="text-sm">
+        <span className="text-black/50 dark:text-white/50">Incident: </span>
+        {event.incident ? (
+          <Link
+            href={`/incidents/${event.incident.id}`}
+            className="font-mono underline hover:text-black dark:hover:text-white"
+          >
+            INC-{event.incident.sequenceNumber}
+          </Link>
+        ) : (
+          <span className="font-mono text-black/50 dark:text-white/50">Unassigned</span>
+        )}
+      </div>
+
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Stack Trace</h2>

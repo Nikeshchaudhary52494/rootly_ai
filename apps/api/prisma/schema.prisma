@@ -20,6 +20,7 @@ model Project {
   environments Environment[]
   apiKeys      ApiKey[]
   errorEvents  ErrorEvent[]
+  incidents    Incident[]
 }
 
 enum EnvironmentType {
@@ -40,6 +41,7 @@ model Environment {
   project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   apiKeys     ApiKey[]
   errorEvents ErrorEvent[]
+  incidents   Incident[]
 
   @@unique([projectId, slug])
 }
@@ -75,6 +77,7 @@ model ErrorEvent {
   errorName    String
   errorMessage String
   stackTrace   String?
+  fingerprint  String
 
   metadata Json?
 
@@ -82,13 +85,59 @@ model ErrorEvent {
   receivedAt DateTime @default(now())
   createdAt  DateTime @default(now())
 
+  incidentId String?
+
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
   apiKey      ApiKey      @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  incident    Incident?   @relation(fields: [incidentId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
   @@index([environmentId])
   @@index([timestamp])
   @@index([receivedAt])
   @@index([errorName])
+  @@index([fingerprint])
+  @@index([incidentId])
+}
+
+enum IncidentStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+}
+
+model Incident {
+  id             String @id @default(uuid())
+  projectId      String
+  environmentId  String
+  sequenceNumber Int    @default(autoincrement())
+
+  fingerprint String
+
+  title        String
+  errorName    String
+  errorMessage String
+
+  status IncidentStatus @default(OPEN)
+
+  occurrenceCount Int @default(1)
+
+  firstSeenAt DateTime
+  lastSeenAt  DateTime
+
+  latestEventId String
+
+  resolvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  environment Environment  @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  errorEvents ErrorEvent[]
+
+  @@unique([projectId, environmentId, fingerprint])
+  @@index([projectId, environmentId, status])
+  @@index([lastSeenAt])
 }

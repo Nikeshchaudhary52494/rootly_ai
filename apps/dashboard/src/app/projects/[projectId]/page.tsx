@@ -79,6 +79,12 @@ export default function ProjectDetailPage({
           >
             Error Events →
           </Link>
+          <Link
+            href={`/projects/${projectId}/repository`}
+            className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+          >
+            Repository →
+          </Link>
         </div>
       </div>
 

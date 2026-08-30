@@ -1,6 +1,7 @@
 require('dotenv/config');
 const express = require('express');
 const { IncidentAI } = require('@incident-ai/node');
+const { confirmPayment } = require('./src/services/payment.service');
 
 const incidentAI = new IncidentAI({
   apiKey: process.env.INCIDENT_AI_API_KEY,
@@ -23,9 +24,11 @@ app.get('/health', (_req, res) => {
 // Intentionally async + unwrapped: Express 4 does not catch a throw/rejection
 // inside an async route handler, so this becomes a genuine unhandledRejection
 // for the SDK's process-level listener to capture — not an Express 500.
+// The failure happens inside confirmPayment() so the stack trace points at
+// src/services/payment.service.js, which Phase 4's GitHub integration resolves.
 app.get('/test-error', async (_req, _res) => {
-  const payment = undefined;
-  return payment.customer.id;
+  const payment = { customer: undefined };
+  return confirmPayment(payment);
 });
 
 app.get('/manual-error', (_req, res) => {

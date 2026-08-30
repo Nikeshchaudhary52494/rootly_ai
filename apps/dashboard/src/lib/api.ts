@@ -5,11 +5,13 @@ import type {
   EnvironmentType,
   ErrorEventDetail,
   ErrorEventSummary,
+  IncidentCodeContext,
   IncidentDetail,
   IncidentStatus,
   IncidentSummary,
   Paginated,
   Project,
+  Repository,
 } from '@incident-ai/shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -101,4 +103,38 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     }),
+
+  getRepository: async (projectId: string): Promise<Repository | null> => {
+    const res = await fetch(`${API_URL}/projects/${projectId}/repository`, { cache: 'no-store' });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(body.message ?? `Request failed: ${res.status}`);
+    }
+    return res.json();
+  },
+  connectRepository: (projectId: string, data: { repositoryUrl: string; accessToken: string }) =>
+    request<Repository>(`/projects/${projectId}/repository`, { method: 'POST', body: JSON.stringify(data) }),
+  disconnectRepository: (projectId: string) =>
+    request<void>(`/projects/${projectId}/repository`, { method: 'DELETE' }),
+  syncRepository: (projectId: string) =>
+    request<{ success: boolean; fileCount: number; lastSyncedAt: string }>(
+      `/projects/${projectId}/repository/sync`,
+      { method: 'POST' },
+    ),
+
+  getIncidentContext: async (incidentId: string): Promise<IncidentCodeContext | null> => {
+    const res = await fetch(`${API_URL}/incidents/${incidentId}/context`, { cache: 'no-store' });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(body.message ?? `Request failed: ${res.status}`);
+    }
+    return res.json();
+  },
+  collectIncidentContext: (incidentId: string) =>
+    request<{ success: boolean; status: string; contextId: string }>(
+      `/incidents/${incidentId}/context/collect`,
+      { method: 'POST' },
+    ),
 };

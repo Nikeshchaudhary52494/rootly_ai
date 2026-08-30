@@ -109,3 +109,54 @@ export interface Paginated<T> {
     offset: number;
   };
 }
+
+export type RepositoryProvider = 'GITHUB';
+
+export interface Repository {
+  id: string;
+  projectId: string;
+  provider: RepositoryProvider;
+  owner: string;
+  name: string;
+  repositoryUrl: string;
+  defaultBranch: string;
+  connectedAt: string;
+  lastValidatedAt: string | null;
+  lastSyncedAt: string | null;
+}
+
+export type IncidentCodeContextStatus = 'PENDING' | 'COLLECTING' | 'READY' | 'FAILED';
+
+export interface IncidentCodeFile {
+  filePath: string;
+  functionName: string | null;
+  lineNumber: number | null;
+  columnNumber: number | null;
+  contentStartLine: number;
+  contentEndLine: number;
+  content: string;
+  isPrimary: boolean;
+}
+
+export interface IncidentRelatedTest {
+  filePath: string;
+  content: string;
+}
+
+export interface IncidentCodeCommit {
+  sha: string;
+  message: string;
+  authorName: string;
+  authorEmail: string;
+  committedAt: string;
+}
+
+export interface IncidentCodeContext {
+  id: string;
+  status: IncidentCodeContextStatus;
+  summary: string | null;
+  primaryLocation: { filePath: string; lineNumber: number | null } | null;
+  files: IncidentCodeFile[];
+  relatedTests: IncidentRelatedTest[];
+  recentCommits: IncidentCodeCommit[];
+}

@@ -1,7 +1,7 @@
 import { systemPrompt } from './shared';
 import type { FixGenerationInput } from '../graph/fix-generation.state';
 
-function renderFile(file: FixGenerationInput['codeContext']['files'][number]): string {
+export function renderFile(file: FixGenerationInput['codeContext']['files'][number]): string {
   const numbered = file.content
     .split('\n')
     .map((line, i) => `${file.contentStartLine + i}: ${line}`)

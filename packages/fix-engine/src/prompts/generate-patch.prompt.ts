@@ -1,4 +1,5 @@
 import { systemPrompt } from './shared';
+import { renderFile } from './analyze-fix.prompt';
 import type { FixAnalysis } from '../schemas/fix-analysis.schema';
 import type { FixGenerationInput } from '../graph/fix-generation.state';
 
@@ -17,6 +18,9 @@ export function generatePatchPrompt(input: FixGenerationInput, analysis: FixAnal
   const user = [
     'What must change:',
     JSON.stringify(analysis, null, 2),
+    '',
+    'Source files (startLine/endLine/originalCode must match this exactly):',
+    input.codeContext.files.map(renderFile).join('\n\n'),
     '',
     relatedTests ? `Existing tests for this code (do not modify these):\n\n${relatedTests}` : null,
     '',

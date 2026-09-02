@@ -140,6 +140,7 @@ model Incident {
   codeContext IncidentCodeContext?
   investigations Investigation[]
   reproductionRuns ReproductionRun[]
+  fixAttempts FixAttempt[]
 
   @@unique([projectId, environmentId, fingerprint])
   @@index([projectId, environmentId, status])
@@ -315,6 +316,7 @@ model Investigation {
   hypotheses InvestigationHypothesis[]
   evidence   InvestigationEvidence[]
   reproductionRuns ReproductionRun[]
+  fixAttempts FixAttempt[]
 
   @@index([incidentId])
   @@index([incidentId, createdAt])
@@ -434,6 +436,7 @@ model ReproductionRun {
   incident      Incident           @relation(fields: [incidentId], references: [id], onDelete: Cascade)
   investigation Investigation      @relation(fields: [investigationId], references: [id], onDelete: Cascade)
   tests         ReproductionTest[]
+  fixAttempts   FixAttempt[]
 
   @@index([incidentId])
   @@index([investigationId])
@@ -458,4 +461,79 @@ model ReproductionTest {
   reproductionRun ReproductionRun @relation(fields: [reproductionRunId], references: [id], onDelete: Cascade)
 
   @@index([reproductionRunId])
+}
+
+enum FixStatus {
+  PENDING
+  GENERATING_FIX
+  VALIDATING_PATCH
+  CREATING_SANDBOX
+  CHECKING_OUT
+  APPLYING_PATCH
+  RUNNING_REPRODUCTION
+  RUNNING_REGRESSION_TESTS
+  VALIDATING
+  COMPLETED
+  FAILED
+}
+
+enum FixResult {
+  FIX_VERIFIED
+  FIX_REJECTED
+  INCONCLUSIVE
+}
+
+model FixAttempt {
+  id                String @id @default(uuid())
+  incidentId        String
+  investigationId   String
+  reproductionRunId String
+
+  status FixStatus  @default(PENDING)
+  result FixResult?
+
+  targetCommitSha String?
+
+  patch             String?
+  changedFiles      String[]
+  explanation       String?
+  validationSummary Json?
+
+  stdout String?
+  stderr String?
+
+  errorMessage String?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  incident        Incident        @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  investigation   Investigation   @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+  reproductionRun ReproductionRun @relation(fields: [reproductionRunId], references: [id], onDelete: Cascade)
+  patches         FixPatch[]
+
+  @@index([incidentId])
+  @@index([investigationId])
+  @@index([reproductionRunId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FixPatch {
+  id           String @id @default(uuid())
+  fixAttemptId String
+
+  filePath        String
+  originalContent String
+  patchedContent  String
+  diff            String
+
+  createdAt DateTime @default(now())
+
+  fixAttempt FixAttempt @relation(fields: [fixAttemptId], references: [id], onDelete: Cascade)
+
+  @@index([fixAttemptId])
 }

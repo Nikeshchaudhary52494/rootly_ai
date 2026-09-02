@@ -258,3 +258,55 @@ export interface ReproductionRun {
   completedAt: string | null;
   createdAt: string;
 }
+
+export type FixStatus =
+  | 'PENDING'
+  | 'GENERATING_FIX'
+  | 'VALIDATING_PATCH'
+  | 'CREATING_SANDBOX'
+  | 'CHECKING_OUT'
+  | 'APPLYING_PATCH'
+  | 'RUNNING_REPRODUCTION'
+  | 'RUNNING_REGRESSION_TESTS'
+  | 'VALIDATING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export type FixResult = 'FIX_VERIFIED' | 'FIX_REJECTED' | 'INCONCLUSIVE';
+
+export interface FixPatchSummary {
+  filePath: string;
+  diff: string;
+}
+
+export interface FixValidationSummary {
+  patchApplied: boolean;
+  reproductionBeforeFix: { result: string | null; reason: string | null };
+  postFixValidation: { outcome: string | null; reason: string | null };
+  regressionTests: { outcome: string | null; total: number; failed: number; reason: string | null };
+  result: FixResult;
+}
+
+export interface FixAttempt {
+  id: string;
+  incidentId: string;
+  investigationId: string;
+  reproductionRunId: string;
+  status: FixStatus;
+  result: FixResult | null;
+  targetCommitSha: string | null;
+  patch: string | null;
+  changedFiles: string[];
+  explanation: string | null;
+  validationSummary: FixValidationSummary | null;
+  stdout: string | null;
+  stderr: string | null;
+  errorMessage: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+}
+
+export interface FixAttemptDetail extends FixAttempt {
+  patches: FixPatchSummary[];
+}

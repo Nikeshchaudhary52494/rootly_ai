@@ -5,6 +5,8 @@ import type {
   EnvironmentType,
   ErrorEventDetail,
   ErrorEventSummary,
+  FixAttempt,
+  FixAttemptDetail,
   IncidentCodeContext,
   IncidentDetail,
   IncidentStatus,
@@ -152,4 +154,10 @@ export const api = {
   getReproductionRun: (runId: string) => request<ReproductionRun>(`/reproduction-runs/${runId}`),
   listIncidentReproductionRuns: (incidentId: string) =>
     request<ReproductionRun[]>(`/incidents/${incidentId}/reproduction-runs`),
+
+  startFix: (incidentId: string) =>
+    request<{ id: string; status: string }>(`/incidents/${incidentId}/fix`, { method: 'POST' }),
+  getFixAttempt: (fixAttemptId: string) => request<FixAttemptDetail>(`/fix-attempts/${fixAttemptId}`),
+  listIncidentFixAttempts: (incidentId: string) =>
+    request<FixAttempt[]>(`/incidents/${incidentId}/fix-attempts`),
 };

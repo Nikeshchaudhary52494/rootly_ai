@@ -4,6 +4,8 @@ import { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type {
   ErrorEventDetail,
+  FixAttempt,
+  FixAttemptDetail,
   IncidentCodeContext,
   IncidentDetail,
   IncidentStatus,
@@ -20,7 +22,7 @@ const STATUS_BADGE: Record<IncidentStatus, string> = {
   IGNORED: 'bg-black/10 text-black/60 dark:bg-white/10 dark:text-white/60',
 };
 
-const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation', 'Reproduction'] as const;
+const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation', 'Reproduction', 'Fix'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function IncidentDetailPage({
@@ -124,6 +126,7 @@ export default function IncidentDetailPage({
       {tab === 'Code Context' && <CodeContextTab incidentId={incidentId} />}
       {tab === 'AI Investigation' && <InvestigationTab incidentId={incidentId} />}
       {tab === 'Reproduction' && <ReproductionTab incidentId={incidentId} />}
+      {tab === 'Fix' && <FixTab incidentId={incidentId} />}
     </div>
   );
 }
@@ -802,6 +805,298 @@ function ReproductionRunView({ run }: { run: ReproductionRun }) {
         </div>
       )}
     </div>
+  );
+}
+
+const FIX_STAGE_LABEL: Record<string, string> = {
+  PENDING: 'Preparing...',
+  GENERATING_FIX: 'Generating fix proposal...',
+  VALIDATING_PATCH: 'Validating patch...',
+  CREATING_SANDBOX: 'Creating sandbox...',
+  CHECKING_OUT: 'Checking out repository...',
+  APPLYING_PATCH: 'Applying patch...',
+  RUNNING_REPRODUCTION: 'Running reproduction test...',
+  RUNNING_REGRESSION_TESTS: 'Running regression tests...',
+  VALIDATING: 'Classifying result...',
+};
+
+const FIX_RESULT_MESSAGE: Record<string, { label: string; className: string }> = {
+  FIX_VERIFIED: { label: '✓ Fix verified — reproduction resolved, no regressions', className: 'text-green-700 dark:text-green-400' },
+  FIX_REJECTED: { label: '✗ Fix rejected', className: 'text-red-700 dark:text-red-400' },
+  INCONCLUSIVE: { label: 'Fix validation was inconclusive', className: 'text-black/60 dark:text-white/60' },
+};
+
+const FIX_POLL_INTERVAL_MS = 2000;
+
+function FixTab({ incidentId }: { incidentId: string }) {
+  const [history, setHistory] = useState<FixAttempt[] | null>(null);
+  const [selected, setSelected] = useState<FixAttemptDetail | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopPolling() {
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+  }
+
+  async function loadHistory(selectId?: string) {
+    try {
+      const list = await api.listIncidentFixAttempts(incidentId);
+      setHistory(list);
+      const targetId = selectId ?? list[0]?.id;
+      if (targetId) setSelected(await api.getFixAttempt(targetId));
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load fix attempts');
+    }
+  }
+
+  useEffect(() => {
+    loadHistory();
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incidentId]);
+
+  function startPolling(fixAttemptId: string) {
+    stopPolling();
+    pollTimer.current = setInterval(async () => {
+      try {
+        const attempt = await api.getFixAttempt(fixAttemptId);
+        setSelected(attempt);
+        if (attempt.status === 'COMPLETED' || attempt.status === 'FAILED') {
+          stopPolling();
+          loadHistory(fixAttemptId);
+        }
+      } catch {
+        stopPolling();
+      }
+    }, FIX_POLL_INTERVAL_MS);
+  }
+
+  async function handleGenerateFix() {
+    setError(null);
+    setStarting(true);
+    try {
+      const { id } = await api.startFix(incidentId);
+      setSelected(await api.getFixAttempt(id));
+      startPolling(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start fix generation');
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  if (history === null && !error) {
+    return <p className="text-sm text-black/50 dark:text-white/50">Loading...</p>;
+  }
+
+  const inProgress = Boolean(selected && selected.status !== 'COMPLETED' && selected.status !== 'FAILED');
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-black/50 dark:text-white/50">AI Fix</h2>
+        <button
+          onClick={handleGenerateFix}
+          disabled={starting || inProgress}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {starting || inProgress ? 'Generating fix...' : 'Generate Fix'}
+        </button>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {selected && <FixAttemptView attempt={selected} />}
+
+      {!selected && !starting && (
+        <p className="text-sm text-black/50 dark:text-white/50">
+          No fix has been generated for this incident yet. A confirmed reproduction (Reproduction tab) is required first.
+        </p>
+      )}
+
+      {history && history.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Fix History</h2>
+          <div className="flex flex-col divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
+            {history.map((attempt, i) => (
+              <button
+                key={attempt.id}
+                onClick={() => {
+                  stopPolling();
+                  api.getFixAttempt(attempt.id).then(setSelected);
+                }}
+                className={`flex items-center justify-between px-4 py-3 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 ${selected?.id === attempt.id ? 'bg-black/5 dark:bg-white/5' : ''}`}
+              >
+                <span>
+                  Attempt #{history.length - i} · {attempt.status}
+                  {attempt.result && ` · ${attempt.result}`}
+                </span>
+                <span className="flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
+                  {attempt.targetCommitSha && <span className="font-mono">{attempt.targetCommitSha.slice(0, 7)}</span>}
+                  <span>{formatRelativeTime(attempt.createdAt)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckRow({ label, status, reason }: { label: string; status: 'pass' | 'fail' | 'skip'; reason?: string | null }) {
+  const icon = status === 'pass' ? '✓' : status === 'fail' ? '✗' : '—';
+  const className =
+    status === 'pass'
+      ? 'text-green-600 dark:text-green-400'
+      : status === 'fail'
+        ? 'text-red-600 dark:text-red-400'
+        : 'text-black/40 dark:text-white/40';
+  return (
+    <div className="flex items-start gap-2 text-sm">
+      <span className={className}>{icon}</span>
+      <span>
+        {label}
+        {reason && <span className="ml-1 text-xs text-black/50 dark:text-white/50">({reason})</span>}
+      </span>
+    </div>
+  );
+}
+
+function FixAttemptView({ attempt }: { attempt: FixAttemptDetail }) {
+  if (attempt.status === 'FAILED') {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+        <p className="font-medium">Fix pipeline failed.</p>
+        {attempt.errorMessage && <p className="mt-1">{attempt.errorMessage}</p>}
+      </div>
+    );
+  }
+
+  if (attempt.status !== 'COMPLETED') {
+    return <p className="text-sm text-black/50 dark:text-white/50">{FIX_STAGE_LABEL[attempt.status] ?? attempt.status}</p>;
+  }
+
+  const resultInfo = attempt.result ? FIX_RESULT_MESSAGE[attempt.result] : null;
+  const summary = attempt.validationSummary;
+
+  return (
+    <div className="flex flex-col gap-6">
+      {resultInfo && (
+        <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+          <p className={`text-sm font-medium ${resultInfo.className}`}>{resultInfo.label}</p>
+          {attempt.result !== 'FIX_VERIFIED' && attempt.errorMessage && (
+            <p className="mt-1 text-xs text-black/50 dark:text-white/50">{attempt.errorMessage}</p>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 rounded-lg border border-black/10 p-4 text-sm dark:border-white/10 sm:grid-cols-3">
+        <Field label="Result" value={attempt.result ?? 'Unknown'} />
+        <Field label="Target Commit" value={attempt.targetCommitSha?.slice(0, 12) ?? '—'} mono />
+        <Field label="Files Changed" value={String(attempt.changedFiles.length)} />
+        <Field label="Created" value={new Date(attempt.createdAt).toLocaleString()} />
+        <Field label="Completed" value={attempt.completedAt ? new Date(attempt.completedAt).toLocaleString() : '—'} />
+      </div>
+
+      {attempt.explanation && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">AI Explanation</h3>
+          <p className="rounded-lg bg-black/5 p-4 text-sm dark:bg-white/10">{attempt.explanation}</p>
+        </div>
+      )}
+
+      {summary && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Validation Steps</h3>
+          <div className="flex flex-col gap-2 rounded-lg border border-black/10 p-4 dark:border-white/10">
+            <CheckRow label="Patch applied to a fresh sandbox checkout" status={summary.patchApplied ? 'pass' : 'fail'} />
+            <CheckRow
+              label="Before-fix reproduction confirmed the bug"
+              status={summary.reproductionBeforeFix.result === 'REPRODUCED' ? 'pass' : 'fail'}
+              reason={summary.reproductionBeforeFix.result}
+            />
+            <CheckRow
+              label="Post-fix validation: bug no longer occurs"
+              status={summary.postFixValidation.outcome === 'PASSED' ? 'pass' : summary.postFixValidation.outcome ? 'fail' : 'skip'}
+              reason={summary.postFixValidation.outcome}
+            />
+            <CheckRow
+              label={`Regression tests${summary.regressionTests.total ? ` (${summary.regressionTests.total} run, ${summary.regressionTests.failed} failed)` : ''}`}
+              status={
+                summary.regressionTests.outcome === 'PASSED' || summary.regressionTests.outcome === 'SKIPPED'
+                  ? 'pass'
+                  : summary.regressionTests.outcome
+                    ? 'fail'
+                    : 'skip'
+              }
+              reason={summary.regressionTests.outcome === 'SKIPPED' ? 'no related tests found' : null}
+            />
+          </div>
+        </div>
+      )}
+
+      {attempt.patches.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Patch</h3>
+          {attempt.patches.map((patch) => (
+            <div key={patch.filePath} className="flex flex-col gap-1">
+              <p className="font-mono text-xs text-black/60 dark:text-white/60">{patch.filePath}</p>
+              <DiffView diff={patch.diff} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(attempt.stdout || attempt.stderr) && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Execution Output</h3>
+          {attempt.stdout && (
+            <div>
+              <p className="text-xs text-black/50 dark:text-white/50">stdout</p>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-3 font-mono text-xs leading-relaxed dark:bg-white/10">
+                {attempt.stdout}
+              </pre>
+            </div>
+          )}
+          {attempt.stderr && (
+            <div>
+              <p className="text-xs text-black/50 dark:text-white/50">stderr</p>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-3 font-mono text-xs leading-relaxed dark:bg-white/10">
+                {attempt.stderr}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DiffView({ diff }: { diff: string }) {
+  const lines = diff.split('\n');
+  return (
+    <pre className="overflow-x-auto whitespace-pre rounded-lg bg-black/5 p-3 font-mono text-xs leading-relaxed dark:bg-white/10">
+      {lines.map((line, i) => {
+        const className = line.startsWith('+')
+          ? 'text-green-700 dark:text-green-400'
+          : line.startsWith('-')
+            ? 'text-red-700 dark:text-red-400'
+            : line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++')
+              ? 'text-black/40 dark:text-white/40'
+              : undefined;
+        return (
+          <div key={i} className={className}>
+            {line || ' '}
+          </div>
+        );
+      })}
+    </pre>
   );
 }
 

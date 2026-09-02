@@ -110,6 +110,71 @@ export interface Paginated<T> {
   };
 }
 
+export type InvestigationStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'LOADING_CONTEXT'
+  | 'ANALYZING_ERROR'
+  | 'ANALYZING_CODE'
+  | 'ANALYZING_HISTORY'
+  | 'GENERATING_HYPOTHESES'
+  | 'EVALUATING_EVIDENCE'
+  | 'GENERATING_REPORT'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export type HypothesisStatus = 'LIKELY' | 'POSSIBLE' | 'REJECTED';
+export type EvidenceType = 'SUPPORTING' | 'CONTRADICTING';
+export type EvidenceSourceType = 'ERROR' | 'SOURCE_CODE' | 'STACK_TRACE' | 'TEST' | 'GIT_COMMIT' | 'CONFIGURATION';
+
+export interface InvestigationHypothesis {
+  id: string;
+  title: string;
+  description: string;
+  confidence: number;
+  rank: number;
+  status: HypothesisStatus;
+}
+
+export interface InvestigationEvidenceItem {
+  id: string;
+  hypothesisId: string;
+  type: EvidenceType;
+  description: string;
+  sourceType: EvidenceSourceType;
+  sourceReference: string;
+  lineStart: number | null;
+  lineEnd: number | null;
+  confidence: number;
+}
+
+export interface InvestigationDetail {
+  id: string;
+  incidentId: string;
+  status: InvestigationStatus;
+  model: string;
+  summary: string | null;
+  recommendation: string | null;
+  finalConfidence: number | null;
+  errorMessage: string | null;
+  usage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
+  hypotheses: InvestigationHypothesis[];
+  evidence: InvestigationEvidenceItem[];
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface InvestigationSummary {
+  id: string;
+  status: InvestigationStatus;
+  model: string;
+  finalConfidence: number | null;
+  summary: string | null;
+  createdAt: string;
+  completedAt: string | null;
+}
+
 export type RepositoryProvider = 'GITHUB';
 
 export interface Repository {

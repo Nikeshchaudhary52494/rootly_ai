@@ -8,6 +8,7 @@ import { eventsRouter } from './routes/events';
 import { incidentsRouter } from './routes/incidents';
 import { repositoryRouter } from './routes/repository';
 import { incidentContextRouter } from './routes/incident-context';
+import { investigationsRouter } from './routes/investigations';
 import { AppError, statusText } from './errors';
 
 export const app = express();
@@ -23,6 +24,7 @@ app.use(eventsRouter);
 app.use(incidentsRouter);
 app.use(repositoryRouter);
 app.use(incidentContextRouter);
+app.use(investigationsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ statusCode: 404, message: `Cannot ${req.method} ${req.path}` });

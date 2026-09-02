@@ -9,6 +9,8 @@ import type {
   IncidentDetail,
   IncidentStatus,
   IncidentSummary,
+  InvestigationDetail,
+  InvestigationSummary,
   Paginated,
   Project,
   Repository,
@@ -137,4 +139,10 @@ export const api = {
       `/incidents/${incidentId}/context/collect`,
       { method: 'POST' },
     ),
+
+  investigateIncident: (incidentId: string) =>
+    request<{ investigationId: string; status: string }>(`/incidents/${incidentId}/investigate`, { method: 'POST' }),
+  getInvestigation: (investigationId: string) => request<InvestigationDetail>(`/investigations/${investigationId}`),
+  listIncidentInvestigations: (incidentId: string) =>
+    request<InvestigationSummary[]>(`/incidents/${incidentId}/investigations`),
 };

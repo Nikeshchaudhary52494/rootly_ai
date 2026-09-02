@@ -11,8 +11,10 @@
     "dev:dashboard": "npm run dev --workspace=dashboard",
     "dev:demo": "npm run dev --workspace=demo-app",
     "build:sdk": "npm run build --workspace=@incident-ai/node",
+    "build:agent": "npm run build --workspace=@incident-ai/agent",
     "test:api": "npm test --workspace=api",
-    "test:sdk": "npm test --workspace=@incident-ai/node"
+    "test:sdk": "npm test --workspace=@incident-ai/node",
+    "test:agent": "npm test --workspace=@incident-ai/agent"
   },
   "overrides": {
     "deepmerge-ts": "8.0.2"

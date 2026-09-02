@@ -4,7 +4,7 @@ import { runGit } from '@rootly.ai/reproduction';
 import { DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '@rootly.ai/fix-engine';
 import type { GitHubClient } from '../client/github-client';
 import { GitHubClientError } from '../client/github-client';
-import { checkoutForPromotion, PromotionCheckoutError, type PromotionCheckoutResult } from './promotion-checkout';
+import { checkoutForPromotion, gitAuthHeader, PromotionCheckoutError, type PromotionCheckoutResult } from './promotion-checkout';
 import { validatePromotionPatchSet, validateChangedFileSet } from './promotion-validator';
 
 const BOT_NAME = 'rootly.ai';
@@ -237,7 +237,7 @@ async function pushBranch(workspacePath: string, branchName: string, accessToken
   // Unlike `git clone -c ...` (clone has its own -c flag), `git push` has no such
   // subcommand option — the global `-c` must precede the subcommand entirely.
   const args: string[] = [];
-  if (accessToken) args.push('-c', `http.extraHeader=Authorization: Bearer ${accessToken}`);
+  if (accessToken) args.push('-c', gitAuthHeader(accessToken));
   args.push('push', '--quiet', 'origin', `HEAD:refs/heads/${branchName}`);
 
   const push = await runGit(args, { cwd: workspacePath, timeoutMs });

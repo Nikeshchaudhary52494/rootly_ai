@@ -19,6 +19,18 @@ export interface PromotionCheckoutResult {
 export class PromotionCheckoutError extends Error {}
 
 /**
+ * GitHub's git-over-HTTPS smart protocol authenticates via Basic auth (token
+ * as the password) — unlike the REST API, which accepts a Bearer header. A
+ * PAT sent as `Authorization: Bearer` here gets a 401 from git's backend,
+ * which then falls back to an interactive credential prompt instead of
+ * surfacing a clean auth error.
+ */
+export function gitAuthHeader(accessToken: string): string {
+  const basic = Buffer.from(`x-access-token:${accessToken}`).toString('base64');
+  return `http.extraHeader=Authorization: Basic ${basic}`;
+}
+
+/**
  * Deliberately different from @rootly.ai/reproduction's checkoutRepository:
  * that one strips `.git` immediately because its checkout only ever needs to
  * be read and executed. This checkout exists specifically to commit and push
@@ -34,12 +46,20 @@ export async function checkoutForPromotion(options: PromotionCheckoutOptions): P
 
   try {
     const cloneArgs = ['clone', '--no-checkout', '--quiet'];
-    if (options.accessToken) cloneArgs.push('-c', `http.extraHeader=Authorization: Bearer ${options.accessToken}`);
+    if (options.accessToken) cloneArgs.push('-c', gitAuthHeader(options.accessToken));
     cloneArgs.push(options.repositoryUrl, dir);
 
     const clone = await runGit(cloneArgs, { timeoutMs: options.timeoutMs });
     if (clone.exitCode !== 0) {
       throw new PromotionCheckoutError(`git clone failed: ${sanitize(clone.stderr, options.accessToken)}`);
+    }
+
+    // `git clone -c` (unlike `-c` on other commands) writes that config into the
+    // new repo's local .git/config. Left in place, push's own `-c http.extraHeader`
+    // would stack on top of it and send GitHub two Authorization headers, which it
+    // rejects outright — so strip it the moment clone no longer needs it.
+    if (options.accessToken) {
+      await runGit(['config', '--local', '--unset-all', 'http.extraHeader'], { cwd: dir, timeoutMs: options.timeoutMs });
     }
 
     const checkout = await runGit(['checkout', '--quiet', options.ref], { cwd: dir, timeoutMs: options.timeoutMs });

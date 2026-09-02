@@ -1,0 +1,22 @@
+{
+  "name": "@incident-ai/github",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsx --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "@incident-ai/fix-engine": "*",
+    "@incident-ai/reproduction": "*",
+    "@octokit/rest": "^22.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "nock": "^14.0.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

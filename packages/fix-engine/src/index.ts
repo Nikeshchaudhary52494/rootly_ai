@@ -1,4 +1,4 @@
-export { validatePatchSafety, verifyOriginalContent, DEFAULT_PATCH_SAFETY_LIMITS } from './patch/patch-validator';
+export { validatePatchSafety, verifyOriginalContent, DEFAULT_PATCH_SAFETY_LIMITS, FORBIDDEN_PATH_PATTERNS } from './patch/patch-validator';
 export type { PatchSafetyLimits, PatchValidationResult } from './patch/patch-validator';
 export { applyChangesToFile, renderUnifiedDiff } from './patch/patch-parser';
 export { generateFixProposal } from './patch/patch-generator';

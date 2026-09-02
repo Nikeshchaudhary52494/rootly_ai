@@ -141,6 +141,7 @@ model Incident {
   investigations Investigation[]
   reproductionRuns ReproductionRun[]
   fixAttempts FixAttempt[]
+  pullRequests PullRequest[]
 
   @@unique([projectId, environmentId, fingerprint])
   @@index([projectId, environmentId, status])
@@ -175,6 +176,7 @@ model Repository {
   project      Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   files        RepositoryFile[]
   codeContexts IncidentCodeContext[]
+  pullRequests PullRequest[]
 }
 
 enum RepositoryFileType {
@@ -495,6 +497,7 @@ model FixAttempt {
   targetCommitSha String?
 
   patch             String?
+  validatedPatchHash String?
   changedFiles      String[]
   explanation       String?
   validationSummary Json?
@@ -514,6 +517,7 @@ model FixAttempt {
   investigation   Investigation   @relation(fields: [investigationId], references: [id], onDelete: Cascade)
   reproductionRun ReproductionRun @relation(fields: [reproductionRunId], references: [id], onDelete: Cascade)
   patches         FixPatch[]
+  pullRequests    PullRequest[]
 
   @@index([incidentId])
   @@index([investigationId])
@@ -536,4 +540,46 @@ model FixPatch {
   fixAttempt FixAttempt @relation(fields: [fixAttemptId], references: [id], onDelete: Cascade)
 
   @@index([fixAttemptId])
+}
+
+enum PullRequestStatus {
+  CREATING
+  OPEN
+  CLOSED
+  MERGED
+  FAILED
+}
+
+model PullRequest {
+  id           String @id @default(uuid())
+  incidentId   String
+  fixAttemptId String
+  repositoryId String
+
+  branchName String
+  baseBranch String
+  commitSha  String?
+
+  prNumber Int?
+  prUrl    String?
+
+  title String
+  body  String
+
+  status PullRequestStatus @default(CREATING)
+
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  incident   Incident   @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  fixAttempt FixAttempt @relation(fields: [fixAttemptId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, branchName])
+  @@index([incidentId])
+  @@index([fixAttemptId])
+  @@index([repositoryId])
+  @@index([status])
 }

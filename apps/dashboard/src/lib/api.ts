@@ -15,6 +15,7 @@ import type {
   InvestigationSummary,
   Paginated,
   Project,
+  PullRequest,
   Repository,
   ReproductionRun,
 } from '@incident-ai/shared';
@@ -160,4 +161,11 @@ export const api = {
   getFixAttempt: (fixAttemptId: string) => request<FixAttemptDetail>(`/fix-attempts/${fixAttemptId}`),
   listIncidentFixAttempts: (incidentId: string) =>
     request<FixAttempt[]>(`/incidents/${incidentId}/fix-attempts`),
+
+  createPr: (incidentId: string) =>
+    request<{ id: string; status: string }>(`/incidents/${incidentId}/create-pr`, { method: 'POST' }),
+  getPullRequest: (pullRequestId: string) => request<PullRequest>(`/pull-requests/${pullRequestId}`),
+  listIncidentPullRequests: (incidentId: string) =>
+    request<PullRequest[]>(`/incidents/${incidentId}/pull-requests`),
+  refreshPullRequest: (pullRequestId: string) => request<PullRequest>(`/pull-requests/${pullRequestId}/refresh`),
 };

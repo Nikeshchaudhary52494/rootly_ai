@@ -11,6 +11,7 @@ import {
   type PatchSafetyLimits,
 } from '@incident-ai/fix-engine';
 import { createOpenAILLM, type InvestigationLLM } from '@incident-ai/agent';
+import { computePatchHash } from '@incident-ai/github';
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 
@@ -227,6 +228,8 @@ async function executeFixAttempt(fixAttemptId: string, llmOverride?: Investigati
 }
 
 async function persistFixResult(fixAttemptId: string, result: FixEngineResult): Promise<void> {
+  const patch = result.patches.length ? result.patches.map((p) => p.diff).join('\n\n') : null;
+
   await prisma.$transaction(async (tx) => {
     await tx.fixAttempt.update({
       where: { id: fixAttemptId },
@@ -234,7 +237,11 @@ async function persistFixResult(fixAttemptId: string, result: FixEngineResult): 
         status: result.status === 'COMPLETED' ? FixStatus.COMPLETED : FixStatus.FAILED,
         result: result.result as FixResult | null,
         targetCommitSha: result.targetCommitSha,
-        patch: result.patches.length ? result.patches.map((p) => p.diff).join('\n\n') : null,
+        patch,
+        // Fingerprints the exact bytes that passed Phase 7 validation — Phase 8 recomputes
+        // this at promotion time and refuses to push if it no longer matches (see
+        // pull-requests.service.ts's PATCH_INTEGRITY_FAILED check).
+        validatedPatchHash: patch ? computePatchHash(patch) : null,
         changedFiles: result.patches.map((p) => p.filePath),
         explanation: result.proposal?.summary ?? null,
         validationSummary: (result.validationSummary as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,

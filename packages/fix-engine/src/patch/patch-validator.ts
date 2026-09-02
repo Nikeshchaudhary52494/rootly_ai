@@ -19,7 +19,9 @@ export interface PatchValidationResult {
 }
 
 // Never editable by an AI-proposed patch, regardless of what the investigation says.
-const FORBIDDEN_PATH_PATTERNS: RegExp[] = [
+// Exported so downstream packages (e.g. @incident-ai/github's promotion validator)
+// can re-check the same list rather than maintaining a second copy.
+export const FORBIDDEN_PATH_PATTERNS: RegExp[] = [
   /(^|\/)\.git(\/|$)/,
   /(^|\/)\.env[^/]*$/,
   /(^|\/)package-lock\.json$/,

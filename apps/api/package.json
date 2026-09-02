@@ -15,6 +15,7 @@
     "@incident-ai/agent": "*",
     "@incident-ai/reproduction": "*",
     "@incident-ai/fix-engine": "*",
+    "@incident-ai/github": "*",
     "@octokit/rest": "^22.0.1",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",

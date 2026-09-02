@@ -310,3 +310,23 @@ export interface FixAttempt {
 export interface FixAttemptDetail extends FixAttempt {
   patches: FixPatchSummary[];
 }
+
+export type PullRequestStatus = 'CREATING' | 'OPEN' | 'CLOSED' | 'MERGED' | 'FAILED';
+
+export interface PullRequest {
+  id: string;
+  incidentId: string;
+  fixAttemptId: string;
+  repositoryId: string;
+  branchName: string;
+  baseBranch: string;
+  commitSha: string | null;
+  prNumber: number | null;
+  prUrl: string | null;
+  title: string;
+  body: string;
+  status: PullRequestStatus;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

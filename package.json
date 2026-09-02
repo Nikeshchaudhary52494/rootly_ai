@@ -14,11 +14,13 @@
     "build:agent": "npm run build --workspace=@incident-ai/agent",
     "build:reproduction": "npm run build --workspace=@incident-ai/reproduction",
     "build:fix-engine": "npm run build --workspace=@incident-ai/fix-engine",
+    "build:github": "npm run build --workspace=@incident-ai/github",
     "test:api": "npm test --workspace=api",
     "test:sdk": "npm test --workspace=@incident-ai/node",
     "test:agent": "npm test --workspace=@incident-ai/agent",
     "test:reproduction": "npm test --workspace=@incident-ai/reproduction",
-    "test:fix-engine": "npm test --workspace=@incident-ai/fix-engine"
+    "test:fix-engine": "npm test --workspace=@incident-ai/fix-engine",
+    "test:github": "npm test --workspace=@incident-ai/github"
   },
   "overrides": {
     "deepmerge-ts": "8.0.2"

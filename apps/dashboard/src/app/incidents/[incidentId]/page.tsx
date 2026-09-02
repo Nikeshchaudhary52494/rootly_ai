@@ -11,6 +11,7 @@ import type {
   IncidentStatus,
   InvestigationDetail,
   InvestigationSummary,
+  PullRequest,
   ReproductionRun,
 } from '@incident-ai/shared';
 import { api } from '@/lib/api';
@@ -22,7 +23,7 @@ const STATUS_BADGE: Record<IncidentStatus, string> = {
   IGNORED: 'bg-black/10 text-black/60 dark:bg-white/10 dark:text-white/60',
 };
 
-const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation', 'Reproduction', 'Fix'] as const;
+const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation', 'Reproduction', 'Fix', 'Pull Request'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function IncidentDetailPage({
@@ -127,6 +128,65 @@ export default function IncidentDetailPage({
       {tab === 'AI Investigation' && <InvestigationTab incidentId={incidentId} />}
       {tab === 'Reproduction' && <ReproductionTab incidentId={incidentId} />}
       {tab === 'Fix' && <FixTab incidentId={incidentId} />}
+      {tab === 'Pull Request' && <PullRequestTab incidentId={incidentId} />}
+    </div>
+  );
+}
+
+interface TimelineStep {
+  label: string;
+  done: boolean;
+}
+
+function IncidentTimeline({ incidentId }: { incidentId: string }) {
+  const [steps, setSteps] = useState<TimelineStep[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const [context, investigations, reproductions, fixes, pullRequests] = await Promise.all([
+        api.getIncidentContext(incidentId).catch(() => null),
+        api.listIncidentInvestigations(incidentId).catch(() => []),
+        api.listIncidentReproductionRuns(incidentId).catch(() => []),
+        api.listIncidentFixAttempts(incidentId).catch(() => []),
+        api.listIncidentPullRequests(incidentId).catch(() => []),
+      ]);
+      if (cancelled) return;
+
+      setSteps([
+        { label: 'Incident Created', done: true },
+        { label: 'Code Context Collected', done: context?.status === 'READY' },
+        { label: 'AI Investigation Completed', done: investigations.some((i) => i.status === 'COMPLETED') },
+        { label: 'Bug Reproduced', done: reproductions.some((r) => r.result === 'REPRODUCED') },
+        { label: 'Fix Generated', done: fixes.length > 0 },
+        { label: 'Fix Verified', done: fixes.some((f) => f.result === 'FIX_VERIFIED') },
+        { label: 'GitHub PR Created', done: pullRequests.some((p) => p.status === 'OPEN' || p.status === 'MERGED') },
+      ]);
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [incidentId]);
+
+  if (!steps) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Timeline</h2>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-lg border border-black/10 p-4 text-sm dark:border-white/10">
+        {steps.map((step, i) => (
+          <div key={step.label} className="flex items-center gap-2">
+            <span className={`flex items-center gap-1.5 ${step.done ? 'text-black dark:text-white' : 'text-black/35 dark:text-white/35'}`}>
+              <span className={step.done ? 'text-green-600 dark:text-green-400' : ''}>{step.done ? '✓' : '○'}</span>
+              {step.label}
+            </span>
+            {i < steps.length - 1 && <span className="text-black/20 dark:text-white/20">→</span>}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -134,6 +194,8 @@ export default function IncidentDetailPage({
 function OverviewTab({ incident }: { incident: IncidentDetail }) {
   return (
     <div className="flex flex-col gap-6">
+      <IncidentTimeline incidentId={incident.id} />
+
       <div className="grid grid-cols-2 gap-4 rounded-lg border border-black/10 p-4 text-sm dark:border-white/10 sm:grid-cols-3">
         <Field label="Environment" value={incident.environment.name} />
         <Field label="Occurrences" value={String(incident.occurrenceCount)} />
@@ -1097,6 +1159,209 @@ function DiffView({ diff }: { diff: string }) {
         );
       })}
     </pre>
+  );
+}
+
+const PR_STATUS_BADGE: Record<PullRequest['status'], string> = {
+  CREATING: 'bg-black/10 text-black/60 dark:bg-white/10 dark:text-white/60',
+  OPEN: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400',
+  CLOSED: 'bg-black/10 text-black/60 dark:bg-white/10 dark:text-white/60',
+  MERGED: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400',
+  FAILED: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400',
+};
+
+const PR_POLL_INTERVAL_MS = 2000;
+
+function PullRequestTab({ incidentId }: { incidentId: string }) {
+  const [history, setHistory] = useState<PullRequest[] | null>(null);
+  const [selected, setSelected] = useState<PullRequest | null>(null);
+  const [latestFixVerified, setLatestFixVerified] = useState<boolean | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopPolling() {
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+  }
+
+  async function loadHistory(selectId?: string) {
+    try {
+      const list = await api.listIncidentPullRequests(incidentId);
+      setHistory(list);
+      const target = selectId ? list.find((p) => p.id === selectId) : list[0];
+      if (target) setSelected(target);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load pull requests');
+    }
+  }
+
+  async function loadFixStatus() {
+    try {
+      const fixes = await api.listIncidentFixAttempts(incidentId);
+      setLatestFixVerified(fixes[0]?.result === 'FIX_VERIFIED');
+    } catch {
+      setLatestFixVerified(false);
+    }
+  }
+
+  useEffect(() => {
+    loadHistory();
+    loadFixStatus();
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incidentId]);
+
+  function startPolling(pullRequestId: string) {
+    stopPolling();
+    pollTimer.current = setInterval(async () => {
+      try {
+        const pr = await api.getPullRequest(pullRequestId);
+        setSelected(pr);
+        if (pr.status !== 'CREATING') {
+          stopPolling();
+          loadHistory(pullRequestId);
+        }
+      } catch {
+        stopPolling();
+      }
+    }, PR_POLL_INTERVAL_MS);
+  }
+
+  async function handleCreatePr() {
+    setError(null);
+    setCreating(true);
+    try {
+      const { id } = await api.createPr(incidentId);
+      setSelected(await api.getPullRequest(id));
+      startPolling(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create pull request');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  if (history === null || latestFixVerified === null) {
+    return <p className="text-sm text-black/50 dark:text-white/50">Loading...</p>;
+  }
+
+  const inProgress = Boolean(selected && selected.status === 'CREATING');
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-black/50 dark:text-white/50">GitHub Pull Request</h2>
+        <button
+          onClick={handleCreatePr}
+          disabled={creating || inProgress || !latestFixVerified}
+          title={!latestFixVerified ? 'A verified fix is required before creating a pull request.' : undefined}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {creating || inProgress ? 'Creating PR...' : 'Create GitHub PR'}
+        </button>
+      </div>
+
+      {!latestFixVerified && (
+        <p className="text-sm text-black/50 dark:text-white/50">
+          A verified fix (Fix tab) is required before a pull request can be created.
+        </p>
+      )}
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {selected && <PullRequestView pr={selected} />}
+
+      {!selected && !creating && latestFixVerified && (
+        <p className="text-sm text-black/50 dark:text-white/50">No pull request has been created for this incident yet.</p>
+      )}
+
+      {history.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Pull Request History</h2>
+          <div className="flex flex-col divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
+            {history.map((pr, i) => (
+              <button
+                key={pr.id}
+                onClick={() => {
+                  stopPolling();
+                  setSelected(pr);
+                }}
+                className={`flex items-center justify-between px-4 py-3 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 ${selected?.id === pr.id ? 'bg-black/5 dark:bg-white/5' : ''}`}
+              >
+                <span className="flex items-center gap-2">
+                  PR {history.length - i}
+                  {pr.prNumber != null && ` · #${pr.prNumber}`}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PR_STATUS_BADGE[pr.status]}`}>{pr.status}</span>
+                </span>
+                <span className="flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
+                  <span className="font-mono">{pr.branchName}</span>
+                  <span>{formatRelativeTime(pr.createdAt)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PullRequestView({ pr }: { pr: PullRequest }) {
+  if (pr.status === 'FAILED') {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+        <p className="font-medium">Pull request creation failed.</p>
+        {pr.errorMessage && <p className="mt-1">{pr.errorMessage}</p>}
+      </div>
+    );
+  }
+
+  if (pr.status === 'CREATING') {
+    return <p className="text-sm text-black/50 dark:text-white/50">Creating pull request...</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+        <p className="text-sm font-medium text-green-700 dark:text-green-400">✓ Pull Request Created</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 rounded-lg border border-black/10 p-4 text-sm dark:border-white/10 sm:grid-cols-3">
+        <Field label="PR" value={pr.prNumber != null ? `#${pr.prNumber}` : '—'} />
+        <Field label="Status" value={pr.status} />
+        <Field label="Branch" value={pr.branchName} mono />
+        <Field label="Base Branch" value={pr.baseBranch} mono />
+        <Field label="Commit" value={pr.commitSha?.slice(0, 12) ?? '—'} mono />
+        <Field label="Created" value={new Date(pr.createdAt).toLocaleString()} />
+      </div>
+
+      {pr.prUrl && (
+        <a
+          href={pr.prUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="self-start rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          Open Pull Request
+        </a>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Title</h3>
+        <p className="rounded-lg bg-black/5 p-3 text-sm dark:bg-white/10">{pr.title}</p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Description</h3>
+        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-4 font-mono text-xs leading-relaxed dark:bg-white/10">
+          {pr.body}
+        </pre>
+      </div>
+    </div>
   );
 }
 

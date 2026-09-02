@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { Environment, ErrorEventSummary } from '@incident-ai/shared';
+import type { Environment, ErrorEventSummary } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 

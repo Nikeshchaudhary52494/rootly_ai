@@ -13,7 +13,7 @@ import type {
   InvestigationSummary,
   PullRequest,
   ReproductionRun,
-} from '@incident-ai/shared';
+} from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 

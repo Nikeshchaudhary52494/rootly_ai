@@ -1,25 +1,25 @@
-import { IncidentAIClient } from './client';
+import { RootlyAIClient } from './client';
 import { buildErrorEvent } from './capture/error.capture';
-import type { IncidentAIConfig } from './types';
+import type { RootlyAIConfig } from './types';
 
 const DEFAULT_SERVER_URL = 'http://localhost:3001';
 
-export class IncidentAI {
-  private readonly client: IncidentAIClient;
-  private readonly config: Required<Pick<IncidentAIConfig, 'serverUrl' | 'enabled'>> & IncidentAIConfig;
+export class RootlyAI {
+  private readonly client: RootlyAIClient;
+  private readonly config: Required<Pick<RootlyAIConfig, 'serverUrl' | 'enabled'>> & RootlyAIConfig;
   private initialized = false;
 
-  constructor(config: IncidentAIConfig) {
-    if (!config.apiKey) throw new Error('[Incident AI] apiKey is required');
-    if (!config.serviceName) throw new Error('[Incident AI] serviceName is required');
-    if (!config.environment) throw new Error('[Incident AI] environment is required');
+  constructor(config: RootlyAIConfig) {
+    if (!config.apiKey) throw new Error('[rootly.ai] apiKey is required');
+    if (!config.serviceName) throw new Error('[rootly.ai] serviceName is required');
+    if (!config.environment) throw new Error('[rootly.ai] environment is required');
 
     this.config = {
       serverUrl: DEFAULT_SERVER_URL,
       enabled: true,
       ...config,
     };
-    this.client = new IncidentAIClient(this.config);
+    this.client = new RootlyAIClient(this.config);
   }
 
   /** Wires up automatic process-level capture. Safe to call more than once. */

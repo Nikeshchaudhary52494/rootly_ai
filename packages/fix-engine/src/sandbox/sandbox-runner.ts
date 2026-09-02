@@ -1,4 +1,4 @@
-import { buildJestCommand } from '@incident-ai/reproduction';
+import { buildJestCommand } from '@rootly.ai/reproduction';
 
 /**
  * Every command run inside the fix sandbox is a backend-built argv array —

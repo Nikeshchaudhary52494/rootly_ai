@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Incident AI",
+  title: "rootly.ai",
   description: "AI-powered incident response platform",
 };
 

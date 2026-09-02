@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useRef, useState } from 'react';
-import type { ApiKeyMetadata, Environment } from '@incident-ai/shared';
+import type { ApiKeyMetadata, Environment } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 
 export default function EnvironmentDetailPage({

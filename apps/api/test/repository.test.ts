@@ -71,17 +71,17 @@ test('connecting a repository stores it and never returns the token', async () =
 
 test('SSH-style repository URLs are accepted', async () => {
   const { project } = await seed();
-  mockGetRepository('thinklylabs', 'incident-ai');
+  mockGetRepository('thinklylabs', 'rootly.ai');
 
   const res = await fetch(`${server.baseUrl}/projects/${project.id}/repository`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ repositoryUrl: 'git@github.com:thinklylabs/incident-ai.git', accessToken: 'tok' }),
+    body: JSON.stringify({ repositoryUrl: 'git@github.com:thinklylabs/rootly.ai.git', accessToken: 'tok' }),
   });
   assert.equal(res.status, 201);
   const body = await res.json();
   assert.equal(body.owner, 'thinklylabs');
-  assert.equal(body.name, 'incident-ai');
+  assert.equal(body.name, 'rootly.ai');
 });
 
 test('an invalid repository URL is rejected without calling GitHub', async () => {

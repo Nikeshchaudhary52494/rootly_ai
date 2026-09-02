@@ -22,7 +22,7 @@ export function generateCommitMessage(input: CommitMessageInput): CommitMessage 
   const subject = input.fixSummary?.trim() || `fix ${input.errorName}`;
   const title = truncate(`fix(incident-${input.incidentSequenceNumber}): ${subject}`, MAX_TITLE_LENGTH);
 
-  const bodyLines = [`Incident: #${input.incidentSequenceNumber}`, '', 'Generated and validated by Incident AI.'];
+  const bodyLines = [`Incident: #${input.incidentSequenceNumber}`, '', 'Generated and validated by rootly.ai.'];
   const body = bodyLines.join('\n');
 
   return { title, body, full: `${title}\n\n${body}` };

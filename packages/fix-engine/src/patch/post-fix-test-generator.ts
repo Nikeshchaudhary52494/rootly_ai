@@ -1,5 +1,5 @@
-import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@incident-ai/agent';
-import { validateGeneratedTest } from '@incident-ai/reproduction';
+import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@rootly.ai/agent';
+import { validateGeneratedTest } from '@rootly.ai/reproduction';
 import { PostFixValidationSchema, type PostFixValidation } from '../schemas/post-fix-validation.schema';
 import { generatePostFixTestPrompt } from '../prompts/generate-post-fix-test.prompt';
 import type { FixGenerationInput } from '../graph/fix-generation.state';

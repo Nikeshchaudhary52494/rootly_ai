@@ -1,5 +1,5 @@
-import { classifyReproduction } from '@incident-ai/reproduction';
-import type { ClassificationOutput, SandboxExecutionResult } from '@incident-ai/reproduction';
+import { classifyReproduction } from '@rootly.ai/reproduction';
+import type { ClassificationOutput, SandboxExecutionResult } from '@rootly.ai/reproduction';
 
 /**
  * Confirms the ORIGINAL Phase 6 reproduction test still shows the bug at

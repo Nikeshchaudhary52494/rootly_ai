@@ -40,7 +40,7 @@ function cloneArgs(repositoryUrl: string, dir: string, accessToken?: string): st
  * credential material or history travels any further than this step.
  */
 export async function checkoutRepository(options: CheckoutOptions): Promise<CheckoutResult> {
-  const dir = await mkdtemp(join(tmpdir(), 'incident-ai-reproduction-'));
+  const dir = await mkdtemp(join(tmpdir(), 'rootly.ai-reproduction-'));
   const cleanup = () => rm(dir, { recursive: true, force: true });
 
   try {

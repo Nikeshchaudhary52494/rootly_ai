@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { renderUnifiedDiff } from '@incident-ai/fix-engine';
+import { renderUnifiedDiff } from '@rootly.ai/fix-engine';
 import { runPrPromotion } from '../src/promotion/pr-promotion';
 import type { GitHubClient, GitHubRef, GitHubPullRequestInfo } from '../src/client/github-client';
 
@@ -55,7 +55,7 @@ async function git(args: string[], cwd: string) {
 }
 
 async function makeBareRepoWithCommit(fileContent: string): Promise<{ bareRepoPath: string; commitSha: string; cleanup: () => Promise<void> }> {
-  const root = await mkdtemp(join(tmpdir(), 'incident-ai-pr-promotion-'));
+  const root = await mkdtemp(join(tmpdir(), 'rootly.ai-pr-promotion-'));
   const bareRepoPath = join(root, 'origin.git');
   const seedPath = join(root, 'seed');
 

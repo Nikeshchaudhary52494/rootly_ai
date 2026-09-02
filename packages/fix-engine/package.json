@@ -1,5 +1,5 @@
 {
-  "name": "@incident-ai/fix-engine",
+  "name": "@rootly.ai/fix-engine",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",
@@ -9,8 +9,8 @@
     "test": "tsx --test test/**/*.test.ts"
   },
   "dependencies": {
-    "@incident-ai/agent": "*",
-    "@incident-ai/reproduction": "*",
+    "@rootly.ai/agent": "*",
+    "@rootly.ai/reproduction": "*",
     "@langchain/core": "^1.2.9",
     "@langchain/langgraph": "^1.4.13",
     "zod": "^4.5.4"

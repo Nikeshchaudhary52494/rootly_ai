@@ -13,7 +13,7 @@ import {
   type InvestigationInput,
   type InvestigationLLM,
   type InvestigationRunResult,
-} from '@incident-ai/agent';
+} from '@rootly.ai/agent';
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 

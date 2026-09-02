@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { IncidentAI } from '../src/incident-ai';
+import { RootlyAI } from '../src/rootly.ai';
 import { normalizeError } from '../src/utils/error-normalizer';
 import { buildErrorEvent } from '../src/capture/error.capture';
 import { HttpTransport } from '../src/transport/http.transport';
@@ -52,14 +52,14 @@ test('manual capture sends a normalized error to the transport', async () => {
     return new Response(null, { status: 201 });
   }) as typeof fetch;
 
-  const incidentAI = new IncidentAI({
+  const rootlyAI = new RootlyAI({
     apiKey: 'iai_dev_test',
     serverUrl: 'http://localhost:3001',
     serviceName: 'payment-service',
     environment: 'production',
   });
 
-  incidentAI.captureException(new TypeError('Cannot read properties of undefined'));
+  rootlyAI.captureException(new TypeError('Cannot read properties of undefined'));
   await flushMicrotasks();
 
   assert.equal(calls.length, 1);
@@ -80,14 +80,14 @@ test('disabled SDK sends nothing', async () => {
     return new Response(null, { status: 201 });
   }) as typeof fetch;
 
-  const incidentAI = new IncidentAI({
+  const rootlyAI = new RootlyAI({
     apiKey: 'iai_dev_test',
     serviceName: 'payment-service',
     environment: 'production',
     enabled: false,
   });
 
-  incidentAI.captureException(new Error('should not be sent'));
+  rootlyAI.captureException(new Error('should not be sent'));
   await flushMicrotasks();
 
   assert.equal(called, false);
@@ -117,13 +117,13 @@ test('failed HTTP request through captureException does not throw or crash the p
     throw new Error('network down');
   }) as typeof fetch;
 
-  const incidentAI = new IncidentAI({
+  const rootlyAI = new RootlyAI({
     apiKey: 'iai_dev_test',
     serviceName: 'payment-service',
     environment: 'production',
   });
 
-  assert.doesNotThrow(() => incidentAI.captureException(new Error('boom')));
+  assert.doesNotThrow(() => rootlyAI.captureException(new Error('boom')));
   await flushMicrotasks();
 
   globalThis.fetch = originalFetch;
@@ -139,14 +139,14 @@ test('debug logs do not expose the API key or Authorization header', async () =>
   const secretKey = 'iai_live_supersecretvalue';
   globalThis.fetch = (async () => new Response(null, { status: 201 })) as typeof fetch;
 
-  const incidentAI = new IncidentAI({
+  const rootlyAI = new RootlyAI({
     apiKey: secretKey,
     serviceName: 'payment-service',
     environment: 'production',
     debug: true,
   });
-  incidentAI.init();
-  incidentAI.captureException(new Error('boom'));
+  rootlyAI.init();
+  rootlyAI.captureException(new Error('boom'));
   await flushMicrotasks();
 
   console.log = originalLog;

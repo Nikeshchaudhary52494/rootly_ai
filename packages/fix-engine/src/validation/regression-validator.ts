@@ -1,4 +1,4 @@
-import type { SandboxExecutionResult } from '@incident-ai/reproduction';
+import type { SandboxExecutionResult } from '@rootly.ai/reproduction';
 
 export interface JestSummary {
   total: number;

@@ -1,2 +1,2 @@
-export { IncidentAI } from './incident-ai';
-export type { IncidentAIConfig, NormalizedError, ErrorEventPayload } from './types';
+export { RootlyAI } from './rootly.ai';
+export type { RootlyAIConfig, NormalizedError, ErrorEventPayload } from './types';

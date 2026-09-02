@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { normalizeError } from '../utils/error-normalizer';
-import type { ErrorEventPayload, IncidentAIConfig } from '../types';
+import type { ErrorEventPayload, RootlyAIConfig } from '../types';
 
-export function buildErrorEvent(error: unknown, config: IncidentAIConfig): ErrorEventPayload {
+export function buildErrorEvent(error: unknown, config: RootlyAIConfig): ErrorEventPayload {
   const normalized = normalizeError(error);
 
   return {

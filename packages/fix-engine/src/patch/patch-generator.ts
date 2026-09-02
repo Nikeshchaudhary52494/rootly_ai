@@ -1,4 +1,4 @@
-import type { InvestigationLLM, LLMUsage } from '@incident-ai/agent';
+import type { InvestigationLLM, LLMUsage } from '@rootly.ai/agent';
 import { buildFixGenerationGraph } from '../graph/fix-generation.graph';
 import type { FixGenerationInput } from '../graph/fix-generation.state';
 import type { FixProposal } from '../schemas/fix-proposal.schema';

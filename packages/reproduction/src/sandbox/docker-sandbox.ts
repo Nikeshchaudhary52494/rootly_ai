@@ -58,7 +58,7 @@ export class DockerSandbox {
   async create(): Promise<void> {
     if (this.containerId) throw new Error('Sandbox container already created');
 
-    const name = `incident-ai-repro-${randomUUID()}`;
+    const name = `rootly.ai-repro-${randomUUID()}`;
     // A quiet keep-alive process so the container has something to run while
     // we `docker cp` files in and `docker exec` the real command afterward.
     const keepAliveSeconds = Math.ceil(this.config.timeoutMs / 1000) + 30;

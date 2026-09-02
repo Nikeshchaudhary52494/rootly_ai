@@ -14,7 +14,7 @@ import {
   runPrPromotion,
   type PrPromotionResult,
   type PrPromotionStage,
-} from '@incident-ai/github';
+} from '@rootly.ai/github';
 
 /** Structured, secret-free logging — never includes the GitHub token. */
 function log(event: string, fields: Record<string, unknown>) {

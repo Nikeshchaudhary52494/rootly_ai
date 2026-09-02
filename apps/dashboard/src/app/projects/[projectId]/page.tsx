@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { ApiKeyMetadata, Environment, EnvironmentType, Project } from '@incident-ai/shared';
+import type { ApiKeyMetadata, Environment, EnvironmentType, Project } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 
 const TABS = ['Overview', 'Environments', 'API Keys'] as const;

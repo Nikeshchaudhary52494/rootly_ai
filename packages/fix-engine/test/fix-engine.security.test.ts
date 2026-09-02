@@ -20,15 +20,15 @@ const execFileAsync = promisify(execFile);
 // here would just duplicate that suite. What's genuinely fix-engine-specific and
 // unproven elsewhere is runFixAttempt's own cleanup guarantee: the sandbox it
 // creates must never survive an early, non-happy-path exit.
-const IMAGE = process.env.REPRODUCTION_DOCKER_IMAGE || 'incident-ai-reproduction-sandbox';
+const IMAGE = process.env.REPRODUCTION_DOCKER_IMAGE || 'rootly.ai-reproduction-sandbox';
 
 async function containerNames(): Promise<string[]> {
-  const { stdout } = await execFileAsync('docker', ['ps', '-a', '--filter', 'name=incident-ai-repro-', '--format', '{{.Names}}']);
+  const { stdout } = await execFileAsync('docker', ['ps', '-a', '--filter', 'name=rootly.ai-repro-', '--format', '{{.Names}}']);
   return stdout.split('\n').map((s) => s.trim()).filter(Boolean);
 }
 
 async function makeLocalRepo(): Promise<{ dir: string; cleanup: () => Promise<void> }> {
-  const dir = await mkdtemp(join(tmpdir(), 'incident-ai-fix-security-'));
+  const dir = await mkdtemp(join(tmpdir(), 'rootly.ai-fix-security-'));
   const run = (args: string[]) => execFileAsync('git', args, { cwd: dir });
 
   // A deliberately non-buggy version of the function: no crash exists, so a

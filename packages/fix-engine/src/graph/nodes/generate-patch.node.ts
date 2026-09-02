@@ -1,4 +1,4 @@
-import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@incident-ai/agent';
+import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@rootly.ai/agent';
 import { FixProposalSchema, type FileChange } from '../../schemas/fix-proposal.schema';
 import { validatePatchSafety, DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '../../patch/patch-validator';
 import { generatePatchPrompt } from '../../prompts/generate-patch.prompt';

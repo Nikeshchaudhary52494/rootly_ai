@@ -1,4 +1,4 @@
-import { FORBIDDEN_PATH_PATTERNS, DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '@incident-ai/fix-engine';
+import { FORBIDDEN_PATH_PATTERNS, DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '@rootly.ai/fix-engine';
 
 export interface PromotionPatchFile {
   filePath: string;
@@ -15,7 +15,7 @@ export interface PromotionValidationResult {
  * Re-applies the same forbidden-path and size limits Phase 7 already
  * enforced, this time against the FixPatch rows being promoted — a second,
  * independent gate before anything is pushed to a real GitHub branch. Uses
- * the same FORBIDDEN_PATH_PATTERNS / PatchSafetyLimits as @incident-ai/fix-engine
+ * the same FORBIDDEN_PATH_PATTERNS / PatchSafetyLimits as @rootly.ai/fix-engine
  * rather than a second copy of the rules.
  */
 export function validatePromotionPatchSet(

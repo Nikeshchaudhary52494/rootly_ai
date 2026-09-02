@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-incident_ai}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-incident_ai}
-      POSTGRES_DB: ${POSTGRES_DB:-incident_ai}
+      POSTGRES_USER: ${POSTGRES_USER:-rootly_ai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootly_ai}
+      POSTGRES_DB: ${POSTGRES_DB:-rootly_ai}
     ports:
       - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-incident_ai}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-rootly_ai}']
       interval: 5s
       timeout: 5s
       retries: 5

@@ -1,5 +1,5 @@
 {
-  "name": "@incident-ai/reproduction",
+  "name": "@rootly.ai/reproduction",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "test": "tsx --test test/**/*.test.ts"
   },
   "dependencies": {
-    "@incident-ai/agent": "*",
+    "@rootly.ai/agent": "*",
     "@langchain/core": "^1.2.9",
     "@langchain/langgraph": "^1.4.13",
     "zod": "^4.5.4"

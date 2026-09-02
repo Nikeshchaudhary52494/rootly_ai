@@ -1,4 +1,4 @@
-import type { InvestigationLLM, LLMUsage, StructuredLLMRequest, StructuredLLMResponse } from '@incident-ai/agent';
+import type { InvestigationLLM, LLMUsage, StructuredLLMRequest, StructuredLLMResponse } from '@rootly.ai/agent';
 
 const DEFAULT_USAGE: LLMUsage = { inputTokens: 10, outputTokens: 10, totalTokens: 20 };
 

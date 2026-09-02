@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import type { Repository } from '@incident-ai/shared';
+import type { Repository } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 

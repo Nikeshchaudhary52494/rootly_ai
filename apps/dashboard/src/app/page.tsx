@@ -7,7 +7,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold">Incident AI</h1>
+        <h1 className="text-2xl font-semibold">rootly.ai</h1>
         <p className="mt-1 text-sm text-black/60 dark:text-white/60">
           AI-powered incident response platform.
         </p>

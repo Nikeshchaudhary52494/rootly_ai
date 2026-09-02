@@ -1,6 +1,6 @@
-# @incident-ai/github
+# @rootly.ai/github
 
-Phase 8 of Incident AI — the final core phase. Given an incident whose fix has
+Phase 8 of rootly.ai — the final core phase. Given an incident whose fix has
 already been **verified by a real sandbox execution** (Phase 7), this package
 promotes that exact, already-proven patch into a real GitHub branch, commit,
 and pull request. It closes the loop:
@@ -64,16 +64,16 @@ packages/github/src/
 └── index.ts
 ```
 
-Like `@incident-ai/agent`, `@incident-ai/reproduction`, and
-`@incident-ai/fix-engine`, this package has no Prisma or Express dependency.
+Like `@rootly.ai/agent`, `@rootly.ai/reproduction`, and
+`@rootly.ai/fix-engine`, this package has no Prisma or Express dependency.
 `apps/api` (see `src/pull-requests/pull-requests.service.ts`) loads the
 incident, repository, and latest `FIX_VERIFIED` `FixAttempt` from the
 database, decrypts the repository token, and hands this package a plain
 `PrPromotionInput`. `apps/api` owns persisting the `PullRequest` row and
 updating its status.
 
-It depends on `@incident-ai/reproduction` for `runGit` (the same minimal-env
-git subprocess wrapper Phase 6/7 use) and on `@incident-ai/fix-engine` for
+It depends on `@rootly.ai/reproduction` for `runGit` (the same minimal-env
+git subprocess wrapper Phase 6/7 use) and on `@rootly.ai/fix-engine` for
 `FORBIDDEN_PATH_PATTERNS` / `DEFAULT_PATCH_SAFETY_LIMITS` — reusing the exact
 same trust-boundary constants rather than maintaining a second copy of them.
 
@@ -199,8 +199,8 @@ FixAttempt*).
 ## Running it
 
 ```bash
-npm run build --workspace=@incident-ai/github   # apps/api consumes dist/, not src/
-npm run test --workspace=@incident-ai/github     # unit tests + real-git integration tests
+npm run build --workspace=@rootly.ai/github   # apps/api consumes dist/, not src/
+npm run test --workspace=@rootly.ai/github     # unit tests + real-git integration tests
 ```
 
 The integration tests (`pr-promotion.test.ts`) use a **local bare git

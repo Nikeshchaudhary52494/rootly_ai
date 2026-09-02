@@ -1,5 +1,5 @@
 {
-  "name": "@incident-ai/github",
+  "name": "@rootly.ai/github",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",
@@ -9,8 +9,8 @@
     "test": "tsx --test test/**/*.test.ts"
   },
   "dependencies": {
-    "@incident-ai/fix-engine": "*",
-    "@incident-ai/reproduction": "*",
+    "@rootly.ai/fix-engine": "*",
+    "@rootly.ai/reproduction": "*",
     "@octokit/rest": "^22.0.1"
   },
   "devDependencies": {

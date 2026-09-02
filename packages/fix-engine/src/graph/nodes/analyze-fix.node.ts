@@ -1,4 +1,4 @@
-import { generateValidated, StructuredOutputError, type InvestigationLLM } from '@incident-ai/agent';
+import { generateValidated, StructuredOutputError, type InvestigationLLM } from '@rootly.ai/agent';
 import { FixAnalysisSchema } from '../../schemas/fix-analysis.schema';
 import { analyzeFixPrompt } from '../../prompts/analyze-fix.prompt';
 import type { FixGenerationState, FixGenerationStateUpdate } from '../fix-generation.state';

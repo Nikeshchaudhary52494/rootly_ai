@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@incident-ai/shared"],
+  transpilePackages: ["@rootly.ai/shared"],
   agentRules: false,
 };
 

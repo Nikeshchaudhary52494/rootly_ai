@@ -6,7 +6,7 @@ import { loadSandboxConfig } from '../src/sandbox/sandbox-config';
 // These tests spin up real, short-lived containers from the sandbox image built
 // via packages/reproduction/docker/sandbox.Dockerfile. Requires Docker and that
 // image to be available locally — see packages/reproduction/README.md.
-const IMAGE = process.env.REPRODUCTION_DOCKER_IMAGE || 'incident-ai-reproduction-sandbox';
+const IMAGE = process.env.REPRODUCTION_DOCKER_IMAGE || 'rootly.ai-reproduction-sandbox';
 
 function config(overrides: Partial<ReturnType<typeof loadSandboxConfig>> = {}) {
   return loadSandboxConfig({ REPRODUCTION_DOCKER_IMAGE: IMAGE, REPRODUCTION_TIMEOUT_MS: '10000', ...toEnv(overrides) });

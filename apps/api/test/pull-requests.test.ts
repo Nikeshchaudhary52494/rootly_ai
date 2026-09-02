@@ -8,10 +8,10 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import nock from 'nock';
-import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@incident-ai/agent';
-import type { GitHubClient, GitHubRef, GitHubPullRequestInfo } from '@incident-ai/github';
-import { computePatchHash } from '@incident-ai/github';
-import { renderUnifiedDiff } from '@incident-ai/fix-engine';
+import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@rootly.ai/agent';
+import type { GitHubClient, GitHubRef, GitHubPullRequestInfo } from '@rootly.ai/github';
+import { computePatchHash } from '@rootly.ai/github';
+import { renderUnifiedDiff } from '@rootly.ai/fix-engine';
 import { prisma } from '../src/prisma';
 import { RepositoryProvider, FixStatus, FixResult } from '../src/generated/prisma/client';
 import { encryptToken } from '../src/github/utils/github-token-crypto';
@@ -83,7 +83,7 @@ async function git(args: string[], cwd: string) {
 }
 
 async function makeBareRepo(): Promise<{ bareRepoPath: string; commitSha: string; cleanup: () => Promise<void> }> {
-  const root = await mkdtemp(join(tmpdir(), 'incident-ai-pr-test-'));
+  const root = await mkdtemp(join(tmpdir(), 'rootly.ai-pr-test-'));
   const bareRepoPath = join(root, 'origin.git');
   const seedPath = join(root, 'seed');
 

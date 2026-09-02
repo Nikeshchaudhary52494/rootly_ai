@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import nock from 'nock';
-import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@incident-ai/agent';
+import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@rootly.ai/agent';
 import { prisma } from '../src/prisma';
 import { startInvestigation } from '../src/investigations/investigations.service';
 import { startReproduction, getReproductionRun } from '../src/reproductions/reproductions.service';
@@ -33,7 +33,7 @@ before(async () => {
   nock.disableNetConnect();
   nock.enableNetConnect((host) => host.includes('127.0.0.1') || host.includes('localhost'));
 
-  const { runGit } = await import('@incident-ai/reproduction');
+  const { runGit } = await import('@rootly.ai/reproduction');
   const repoRoot = resolve(process.cwd(), '..', '..');
   const result = await runGit(['rev-parse', 'HEAD'], { cwd: repoRoot });
   if (result.exitCode !== 0) throw new Error(`Failed to resolve current commit sha: ${result.stderr}`);

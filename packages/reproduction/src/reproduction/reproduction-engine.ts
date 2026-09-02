@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import type { InvestigationLLM } from '@incident-ai/agent';
+import type { InvestigationLLM } from '@rootly.ai/agent';
 import { DockerSandbox } from '../sandbox/docker-sandbox';
 import { loadSandboxConfig, type SandboxConfig } from '../sandbox/sandbox-config';
 import { checkoutRepository, type CheckoutResult } from '../repository/repository-checkout';

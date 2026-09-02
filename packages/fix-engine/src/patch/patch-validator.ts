@@ -19,7 +19,7 @@ export interface PatchValidationResult {
 }
 
 // Never editable by an AI-proposed patch, regardless of what the investigation says.
-// Exported so downstream packages (e.g. @incident-ai/github's promotion validator)
+// Exported so downstream packages (e.g. @rootly.ai/github's promotion validator)
 // can re-check the same list rather than maintaining a second copy.
 export const FORBIDDEN_PATH_PATTERNS: RegExp[] = [
   /(^|\/)\.git(\/|$)/,

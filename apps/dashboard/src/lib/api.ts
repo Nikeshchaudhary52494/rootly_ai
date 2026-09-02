@@ -18,7 +18,7 @@ import type {
   PullRequest,
   Repository,
   ReproductionRun,
-} from '@incident-ai/shared';
+} from '@rootly.ai/shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 

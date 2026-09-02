@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import type { InvestigationLLM } from '@incident-ai/agent';
-import { checkoutRepository, type CheckoutResult, type SandboxConfig } from '@incident-ai/reproduction';
+import type { InvestigationLLM } from '@rootly.ai/agent';
+import { checkoutRepository, type CheckoutResult, type SandboxConfig } from '@rootly.ai/reproduction';
 import { createFixSandbox, loadFixSandboxConfig } from '../sandbox/fix-sandbox';
 import { buildPostFixValidationCommand, buildReproductionCheckCommand, buildRegressionCommand } from '../sandbox/sandbox-runner';
 import { generateFixProposal } from '../patch/patch-generator';

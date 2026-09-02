@@ -1,4 +1,4 @@
-export interface IncidentAIConfig {
+export interface RootlyAIConfig {
   apiKey: string;
   serverUrl?: string;
   serviceName: string;

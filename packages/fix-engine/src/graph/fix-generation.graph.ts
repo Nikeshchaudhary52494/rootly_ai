@@ -1,5 +1,5 @@
 import { StateGraph, START, END } from '@langchain/langgraph';
-import type { InvestigationLLM } from '@incident-ai/agent';
+import type { InvestigationLLM } from '@rootly.ai/agent';
 import type { PatchSafetyLimits } from '../patch/patch-validator';
 import { DEFAULT_PATCH_SAFETY_LIMITS } from '../patch/patch-validator';
 import { FixGenerationAnnotation, type FixGenerationState } from './fix-generation.state';

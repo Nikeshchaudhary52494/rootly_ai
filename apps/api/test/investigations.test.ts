@@ -3,7 +3,7 @@ import { test, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import nock from 'nock';
-import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@incident-ai/agent';
+import type { InvestigationLLM, StructuredLLMRequest, StructuredLLMResponse } from '@rootly.ai/agent';
 import { prisma } from '../src/prisma';
 import { startInvestigation, getInvestigation, listIncidentInvestigations } from '../src/investigations/investigations.service';
 import { startTestServer, seedProjectWithApiKey, cleanupProject } from './helpers';

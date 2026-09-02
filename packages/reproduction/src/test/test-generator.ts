@@ -1,4 +1,4 @@
-import type { InvestigationLLM, LLMUsage } from '@incident-ai/agent';
+import type { InvestigationLLM, LLMUsage } from '@rootly.ai/agent';
 import { buildTestGenerationGraph } from '../graph/generation.graph';
 import type { TestGenerationInput } from '../graph/generation.state';
 import type { ReproductionTest } from '../schemas/reproduction.schema';

@@ -1,4 +1,4 @@
-import { generateValidated, StructuredOutputError, type InvestigationLLM } from '@incident-ai/agent';
+import { generateValidated, StructuredOutputError, type InvestigationLLM } from '@rootly.ai/agent';
 import { FailureUnderstandingSchema } from '../../schemas/failure-understanding.schema';
 import { understandFailurePrompt } from '../../prompts/understand-failure.prompt';
 import type { TestGenerationState, TestGenerationStateUpdate } from '../generation.state';

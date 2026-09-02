@@ -1,6 +1,6 @@
-# @incident-ai/fix-engine
+# @rootly.ai/fix-engine
 
-Phase 7 of Incident AI: given an incident whose bug has already been
+Phase 7 of rootly.ai: given an incident whose bug has already been
 **confirmed reproduced** (Phase 6), this package proposes a minimal code
 patch and — the important part — independently proves whether that patch
 actually fixes the bug, by applying it to the real checked-out repository
@@ -53,7 +53,7 @@ packages/fix-engine/src/
 │   ├── patch-generator.ts    runs the fix-generation graph
 │   └── post-fix-test-generator.ts   one LLM call for the after-fix test
 ├── sandbox/
-│   ├── fix-sandbox.ts        thin wrapper over @incident-ai/reproduction's
+│   ├── fix-sandbox.ts        thin wrapper over @rootly.ai/reproduction's
 │   │                          DockerSandbox — always a fresh container
 │   └── sandbox-runner.ts     builds jest argv for before/after/regression runs
 ├── validation/
@@ -67,7 +67,7 @@ packages/fix-engine/src/
 ```
 
 This package has no Prisma or Express dependency, exactly like
-`@incident-ai/agent` and `@incident-ai/reproduction`. `apps/api` (see
+`@rootly.ai/agent` and `@rootly.ai/reproduction`. `apps/api` (see
 `src/fix-attempts/fix-attempts.service.ts`) loads the incident, the latest
 completed investigation, and the latest `REPRODUCED` reproduction run from
 the database, decrypts the repository token, and hands this package a plain
@@ -79,7 +79,7 @@ updating status after every stage.
 - **It never creates a GitHub PR, pushes a branch, or commits anything to
   the user's real repository.** Every patch is applied to a throwaway `git
   clone` in a host temp directory (via `checkoutRepository`, reused
-  unmodified from `@incident-ai/reproduction`), which is deleted in a
+  unmodified from `@rootly.ai/reproduction`), which is deleted in a
   `finally` block regardless of outcome.
 - **It never reuses a Phase 6 reproduction sandbox instance.** `fix-sandbox
   .ts`'s `createFixSandbox` always constructs a brand-new `DockerSandbox` —
@@ -94,7 +94,7 @@ updating status after every stage.
 
 The sandbox itself — network disabled, no Docker socket, no host mounts,
 resource-capped, ephemeral, secrets never forwarded — is
-`@incident-ai/reproduction`'s `DockerSandbox`, used here **unmodified**; see
+`@rootly.ai/reproduction`'s `DockerSandbox`, used here **unmodified**; see
 `packages/reproduction/README.md#security-model` and
 `docker-sandbox.security.test.ts` for that class's own proof. This package
 does not duplicate those tests. What it adds on top:
@@ -129,7 +129,7 @@ is passed to `spawn` as a real array, never a shell string.
 patch, an early "bug not reproduced" exit, and a thrown exception alike. See
 `fix-engine.security.test.ts`, which asserts this with a real container
 against a local git repository (the Docker-isolation properties themselves
-are proven once, upstream, in `@incident-ai/reproduction` — see that
+are proven once, upstream, in `@rootly.ai/reproduction` — see that
 package's own security suite rather than a duplicate here).
 
 ## Classification
@@ -158,12 +158,12 @@ including a rejected or inconclusive one — resolves to `status: COMPLETED`.
 ## Running it
 
 Prerequisites: Docker running locally, and the Phase 6 sandbox image built
-(`incident-ai-reproduction-sandbox` — see `packages/reproduction/README.md`;
+(`rootly.ai-reproduction-sandbox` — see `packages/reproduction/README.md`;
 this package reuses the same image, no separate build needed).
 
 ```bash
-npm run build --workspace=@incident-ai/fix-engine   # apps/api consumes dist/, not src/
-npm run test --workspace=@incident-ai/fix-engine     # unit + mocked-LLM + real-Docker tests
+npm run build --workspace=@rootly.ai/fix-engine   # apps/api consumes dist/, not src/
+npm run test --workspace=@rootly.ai/fix-engine     # unit + mocked-LLM + real-Docker tests
 ```
 
 End to end, from the API:

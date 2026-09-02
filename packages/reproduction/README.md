@@ -1,13 +1,13 @@
-# @incident-ai/reproduction
+# @rootly.ai/reproduction
 
-Phase 6 of Incident AI: given a root-cause report from the Phase 5 investigation
+Phase 6 of rootly.ai: given a root-cause report from the Phase 5 investigation
 agent, this package proves — or disproves — that the underlying bug actually
 reproduces, by generating a test and **actually executing it** against the
 real repository code inside an isolated Docker sandbox.
 
 ## What "reproduction" means here
 
-The AI investigation agent (`@incident-ai/agent`) can be wrong. A confident,
+The AI investigation agent (`@rootly.ai/agent`) can be wrong. A confident,
 well-evidenced root-cause report is still a hypothesis until something
 independent checks it. This package is that check:
 
@@ -58,7 +58,7 @@ This package has no Prisma or Express dependency. `apps/api` (see
 `src/reproductions/reproductions.service.ts`) loads the incident,
 investigation, and code context from the database, decrypts the repository
 token, and hands this package a plain `ReproductionEngineInput` — the same
-shape `@incident-ai/agent` uses for investigations. `apps/api` also owns
+shape `@rootly.ai/agent` uses for investigations. `apps/api` also owns
 persisting `ReproductionRun`/`ReproductionTest` and updating status after
 every stage.
 
@@ -125,7 +125,7 @@ Before a generated test ever touches disk, `test-validator.ts` rejects it if:
 
 If the model's first attempt fails this check, it gets exactly one retry with
 the specific violation explained back to it (mirroring the schema-validation
-retry from `@incident-ai/agent`). A second failure marks the run `FAILED`.
+retry from `@rootly.ai/agent`). A second failure marks the run `FAILED`.
 This is a **static, pattern-based gate** — it is not itself a sandbox. The
 sandbox (network-disabled, no host mounts, resource-capped, ephemeral) is
 what actually contains a test that got past it anyway.
@@ -138,7 +138,7 @@ baked in at image-build time (when the network is available, under your
 control — not at request time). Build it once:
 
 ```bash
-docker build -t incident-ai-reproduction-sandbox \
+docker build -t rootly.ai-reproduction-sandbox \
   -f packages/reproduction/docker/sandbox.Dockerfile \
   packages/reproduction/docker
 ```
@@ -202,8 +202,8 @@ dashboard story than an undifferentiated failure with no classification.
 Prerequisites: Docker running locally, and the sandbox image built (above).
 
 ```bash
-npm run build --workspace=@incident-ai/reproduction   # apps/api consumes dist/, not src/
-npm run test --workspace=@incident-ai/reproduction     # unit + real-Docker security tests
+npm run build --workspace=@rootly.ai/reproduction   # apps/api consumes dist/, not src/
+npm run test --workspace=@rootly.ai/reproduction     # unit + real-Docker security tests
 ```
 
 End to end, from the API:

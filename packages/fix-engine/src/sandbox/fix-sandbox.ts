@@ -1,4 +1,4 @@
-import { DockerSandbox, loadSandboxConfig, type SandboxConfig } from '@incident-ai/reproduction';
+import { DockerSandbox, loadSandboxConfig, type SandboxConfig } from '@rootly.ai/reproduction';
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {
   if (!value) return fallback;

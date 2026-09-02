@@ -1,5 +1,5 @@
 {
-  "name": "@incident-ai/agent",
+  "name": "@rootly.ai/agent",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",

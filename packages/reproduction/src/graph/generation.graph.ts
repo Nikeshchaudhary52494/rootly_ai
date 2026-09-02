@@ -1,5 +1,5 @@
 import { StateGraph, START, END } from '@langchain/langgraph';
-import type { InvestigationLLM } from '@incident-ai/agent';
+import type { InvestigationLLM } from '@rootly.ai/agent';
 import { TestGenerationAnnotation, type TestGenerationState } from './generation.state';
 import { createUnderstandFailureNode } from './nodes/understand-failure.node';
 import { createGenerateTestNode } from './nodes/generate-test.node';

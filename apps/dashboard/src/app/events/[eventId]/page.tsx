@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { ErrorEventDetail, Project } from '@incident-ai/shared';
+import type { ErrorEventDetail, Project } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 
 export default function EventDetailPage({

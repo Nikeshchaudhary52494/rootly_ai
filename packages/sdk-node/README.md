@@ -1,12 +1,12 @@
-# @incident-ai/node
+# @rootly.ai/node
 
-Node.js SDK for reporting application errors to Incident AI.
+Node.js SDK for reporting application errors to rootly.ai.
 
 ```ts
-import { IncidentAI } from "@incident-ai/node";
+import { RootlyAI } from "@rootly.ai/node";
 
-const incidentAI = new IncidentAI({
-  apiKey: process.env.INCIDENT_AI_API_KEY!,
+const rootlyAI = new RootlyAI({
+  apiKey: process.env.ROOTLY_AI_API_KEY!,
   serverUrl: "http://localhost:3001",
   serviceName: "payment-service",
   environment: "production",
@@ -14,10 +14,10 @@ const incidentAI = new IncidentAI({
   debug: true,
 });
 
-incidentAI.init(); // wires up uncaughtException / unhandledRejection
+rootlyAI.init(); // wires up uncaughtException / unhandledRejection
 
-incidentAI.captureException(error);
-incidentAI.captureMessage("Something unexpected happened");
+rootlyAI.captureException(error);
+rootlyAI.captureMessage("Something unexpected happened");
 ```
 
 ## Config
@@ -41,5 +41,5 @@ incidentAI.captureMessage("Something unexpected happened");
   future batching/retry transport can drop in without changing the public API).
 - Debug logs (`debug: true`) never include the API key or Authorization header.
 
-Build: `npm run build --workspace=@incident-ai/node`. Consumed locally via the npm
+Build: `npm run build --workspace=@rootly.ai/node`. Consumed locally via the npm
 workspace; not yet published to npm.

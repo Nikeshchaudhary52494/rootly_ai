@@ -1,14 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { runGit } from '@incident-ai/reproduction';
-import { DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '@incident-ai/fix-engine';
+import { runGit } from '@rootly.ai/reproduction';
+import { DEFAULT_PATCH_SAFETY_LIMITS, type PatchSafetyLimits } from '@rootly.ai/fix-engine';
 import type { GitHubClient } from '../client/github-client';
 import { GitHubClientError } from '../client/github-client';
 import { checkoutForPromotion, PromotionCheckoutError, type PromotionCheckoutResult } from './promotion-checkout';
 import { validatePromotionPatchSet, validateChangedFileSet } from './promotion-validator';
 
-const BOT_NAME = 'Incident AI';
-const BOT_EMAIL = 'incident-ai@users.noreply.github.com';
+const BOT_NAME = 'rootly.ai';
+const BOT_EMAIL = 'rootly.ai@users.noreply.github.com';
 const DEFAULT_TIMEOUT_MS = 60000;
 
 export type PrPromotionStage =
@@ -47,7 +47,7 @@ export interface PrPromotionInput {
   targetCommitSha: string;
   /**
    * Already resolved to a real, currently-unique name by the caller (see
-   * @incident-ai/github's branch-manager) before this function is ever
+   * @rootly.ai/github's branch-manager) before this function is ever
    * invoked — resolving it here, after a DB row may already reference a
    * candidate name, would risk the DB and GitHub disagreeing about which
    * name is actually free. This function only ever creates *this* branch,

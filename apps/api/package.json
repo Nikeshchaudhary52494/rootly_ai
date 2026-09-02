@@ -12,10 +12,10 @@
     "test": "tsx --test --test-concurrency=1 test/**/*.test.ts"
   },
   "dependencies": {
-    "@incident-ai/agent": "*",
-    "@incident-ai/reproduction": "*",
-    "@incident-ai/fix-engine": "*",
-    "@incident-ai/github": "*",
+    "@rootly.ai/agent": "*",
+    "@rootly.ai/reproduction": "*",
+    "@rootly.ai/fix-engine": "*",
+    "@rootly.ai/github": "*",
     "@octokit/rest": "^22.0.1",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",

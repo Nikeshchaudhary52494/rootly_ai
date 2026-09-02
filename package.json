@@ -1,5 +1,5 @@
 {
-  "name": "incident-ai",
+  "name": "rootly.ai",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -10,17 +10,17 @@
     "dev:api": "npm run start:dev --workspace=api",
     "dev:dashboard": "npm run dev --workspace=dashboard",
     "dev:demo": "npm run dev --workspace=demo-app",
-    "build:sdk": "npm run build --workspace=@incident-ai/node",
-    "build:agent": "npm run build --workspace=@incident-ai/agent",
-    "build:reproduction": "npm run build --workspace=@incident-ai/reproduction",
-    "build:fix-engine": "npm run build --workspace=@incident-ai/fix-engine",
-    "build:github": "npm run build --workspace=@incident-ai/github",
+    "build:sdk": "npm run build --workspace=@rootly.ai/node",
+    "build:agent": "npm run build --workspace=@rootly.ai/agent",
+    "build:reproduction": "npm run build --workspace=@rootly.ai/reproduction",
+    "build:fix-engine": "npm run build --workspace=@rootly.ai/fix-engine",
+    "build:github": "npm run build --workspace=@rootly.ai/github",
     "test:api": "npm test --workspace=api",
-    "test:sdk": "npm test --workspace=@incident-ai/node",
-    "test:agent": "npm test --workspace=@incident-ai/agent",
-    "test:reproduction": "npm test --workspace=@incident-ai/reproduction",
-    "test:fix-engine": "npm test --workspace=@incident-ai/fix-engine",
-    "test:github": "npm test --workspace=@incident-ai/github"
+    "test:sdk": "npm test --workspace=@rootly.ai/node",
+    "test:agent": "npm test --workspace=@rootly.ai/agent",
+    "test:reproduction": "npm test --workspace=@rootly.ai/reproduction",
+    "test:fix-engine": "npm test --workspace=@rootly.ai/fix-engine",
+    "test:github": "npm test --workspace=@rootly.ai/github"
   },
   "overrides": {
     "deepmerge-ts": "8.0.2"

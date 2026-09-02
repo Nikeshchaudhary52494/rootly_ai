@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import type { Environment, IncidentStatus, IncidentSummary } from '@incident-ai/shared';
+import type { Environment, IncidentStatus, IncidentSummary } from '@rootly.ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 

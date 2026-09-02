@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runGit } from '@incident-ai/reproduction';
+import { runGit } from '@rootly.ai/reproduction';
 
 export interface PromotionCheckoutOptions {
   repositoryUrl: string;
@@ -19,7 +19,7 @@ export interface PromotionCheckoutResult {
 export class PromotionCheckoutError extends Error {}
 
 /**
- * Deliberately different from @incident-ai/reproduction's checkoutRepository:
+ * Deliberately different from @rootly.ai/reproduction's checkoutRepository:
  * that one strips `.git` immediately because its checkout only ever needs to
  * be read and executed. This checkout exists specifically to commit and push
  * from, so `.git` has to stay. The credential is still only ever used as a
@@ -29,7 +29,7 @@ export class PromotionCheckoutError extends Error {}
  * `.git` included, the moment the push has completed (success or failure).
  */
 export async function checkoutForPromotion(options: PromotionCheckoutOptions): Promise<PromotionCheckoutResult> {
-  const dir = await mkdtemp(join(tmpdir(), 'incident-ai-promotion-'));
+  const dir = await mkdtemp(join(tmpdir(), 'rootly.ai-promotion-'));
   const cleanup = () => rm(dir, { recursive: true, force: true });
 
   try {

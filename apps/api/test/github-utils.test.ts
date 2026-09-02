@@ -23,9 +23,9 @@ test('repository URL: parses an https .git URL', () => {
 });
 
 test('repository URL: parses an SSH URL', () => {
-  assert.deepEqual(parseGithubRepositoryUrl('git@github.com:thinklylabs/incident-ai.git'), {
+  assert.deepEqual(parseGithubRepositoryUrl('git@github.com:thinklylabs/rootly.ai.git'), {
     owner: 'thinklylabs',
-    name: 'incident-ai',
+    name: 'rootly.ai',
   });
 });
 

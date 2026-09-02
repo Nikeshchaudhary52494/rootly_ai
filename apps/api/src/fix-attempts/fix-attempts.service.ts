@@ -9,9 +9,9 @@ import {
   type FixEngineStage,
   type FixGenerationInput,
   type PatchSafetyLimits,
-} from '@incident-ai/fix-engine';
-import { createOpenAILLM, type InvestigationLLM } from '@incident-ai/agent';
-import { computePatchHash } from '@incident-ai/github';
+} from '@rootly.ai/fix-engine';
+import { createOpenAILLM, type InvestigationLLM } from '@rootly.ai/agent';
+import { computePatchHash } from '@rootly.ai/github';
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 

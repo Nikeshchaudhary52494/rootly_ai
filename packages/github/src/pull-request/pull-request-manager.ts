@@ -61,9 +61,9 @@ export function generatePullRequestContent(input: PullRequestContentInput): Pull
     '',
     changedFilesList,
     '',
-    '## Incident AI',
+    '## rootly.ai',
     '',
-    'Generated and validated by Incident AI. A human reviewer must approve and merge this pull request.',
+    'Generated and validated by rootly.ai. A human reviewer must approve and merge this pull request.',
   ].join('\n');
 
   return { title, body };

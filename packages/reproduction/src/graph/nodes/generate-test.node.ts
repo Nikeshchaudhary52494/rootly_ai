@@ -1,4 +1,4 @@
-import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@incident-ai/agent';
+import { generateValidated, StructuredOutputError, type InvestigationLLM, type LLMUsage } from '@rootly.ai/agent';
 import { ReproductionTestSchema, type ReproductionTest } from '../../schemas/reproduction.schema';
 import { validateGeneratedTest } from '../../test/test-validator';
 import { generateTestPrompt } from '../../prompts/generate-test.prompt';

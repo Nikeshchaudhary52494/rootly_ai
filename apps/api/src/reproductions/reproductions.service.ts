@@ -9,8 +9,8 @@ import {
   type ReproductionEngineResult,
   type ReproductionEngineStage,
   type TestGenerationInput,
-} from '@incident-ai/reproduction';
-import { createOpenAILLM, type InvestigationLLM } from '@incident-ai/agent';
+} from '@rootly.ai/reproduction';
+import { createOpenAILLM, type InvestigationLLM } from '@rootly.ai/agent';
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 

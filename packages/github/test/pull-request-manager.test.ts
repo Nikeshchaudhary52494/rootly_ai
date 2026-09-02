@@ -31,7 +31,7 @@ test('generatePullRequestContent: body includes incident number, root cause, tar
   assert.match(body, /PaymentService accesses customer\.id/);
   assert.match(body, /abc123/);
   assert.match(body, /demo-app\/src\/services\/payment\.service\.js/);
-  assert.match(body, /Generated and validated by Incident AI/);
+  assert.match(body, /Generated and validated by rootly.ai/);
 });
 
 test('generatePullRequestContent: body never includes stdout/stderr-style giant logs', () => {

@@ -10,6 +10,8 @@ import { OpenAIInvestigationLLM } from './llm/llm.client';
 
 export type { InvestigationLLM, LLMUsage, StructuredLLMRequest, StructuredLLMResponse } from './llm/llm.client';
 export { OpenAIInvestigationLLM } from './llm/llm.client';
+export { generateValidated, StructuredOutputError } from './llm/structured-output';
+export type { ValidatedResult } from './llm/structured-output';
 export type {
   InvestigationInput,
   InvestigationIncident,

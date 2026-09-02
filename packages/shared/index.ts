@@ -225,3 +225,36 @@ export interface IncidentCodeContext {
   relatedTests: IncidentRelatedTest[];
   recentCommits: IncidentCodeCommit[];
 }
+
+export type ReproductionStatus =
+  | 'PENDING'
+  | 'GENERATING_TEST'
+  | 'CREATING_SANDBOX'
+  | 'CHECKING_OUT'
+  | 'INSTALLING'
+  | 'RUNNING'
+  | 'CLASSIFYING'
+  | 'COMPLETED'
+  | 'FAILED';
+
+export type ReproductionResult = 'REPRODUCED' | 'NOT_REPRODUCED' | 'INCONCLUSIVE';
+
+export interface ReproductionRun {
+  id: string;
+  incidentId: string;
+  investigationId: string;
+  status: ReproductionStatus;
+  result: ReproductionResult | null;
+  targetCommitSha: string | null;
+  testFilePath: string | null;
+  testExplanation: string | null;
+  generatedTest: string | null;
+  stdout: string | null;
+  stderr: string | null;
+  exitCode: number | null;
+  durationMs: number | null;
+  errorMessage: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+}

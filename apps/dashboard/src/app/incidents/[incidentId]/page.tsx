@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type {
   ErrorEventDetail,
@@ -9,6 +9,7 @@ import type {
   IncidentStatus,
   InvestigationDetail,
   InvestigationSummary,
+  ReproductionRun,
 } from '@incident-ai/shared';
 import { api } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
@@ -19,7 +20,7 @@ const STATUS_BADGE: Record<IncidentStatus, string> = {
   IGNORED: 'bg-black/10 text-black/60 dark:bg-white/10 dark:text-white/60',
 };
 
-const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation'] as const;
+const TABS = ['Overview', 'Events', 'Code Context', 'AI Investigation', 'Reproduction'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function IncidentDetailPage({
@@ -122,6 +123,7 @@ export default function IncidentDetailPage({
       {tab === 'Events' && <EventsTab incidentId={incidentId} />}
       {tab === 'Code Context' && <CodeContextTab incidentId={incidentId} />}
       {tab === 'AI Investigation' && <InvestigationTab incidentId={incidentId} />}
+      {tab === 'Reproduction' && <ReproductionTab incidentId={incidentId} />}
     </div>
   );
 }
@@ -579,6 +581,225 @@ function EvidenceList({ evidence }: { evidence: InvestigationDetail['evidence'] 
       ))}
       {supporting.length === 0 && contradicting.length === 0 && (
         <p className="text-black/50 dark:text-white/50">No evidence recorded.</p>
+      )}
+    </div>
+  );
+}
+
+const REPRODUCTION_STAGE_LABEL: Record<string, string> = {
+  PENDING: 'Preparing...',
+  GENERATING_TEST: 'Generating reproduction test...',
+  CREATING_SANDBOX: 'Creating sandbox...',
+  CHECKING_OUT: 'Checking out repository...',
+  INSTALLING: 'Installing dependencies...',
+  RUNNING: 'Running test...',
+  CLASSIFYING: 'Classifying result...',
+};
+
+const REPRODUCTION_RESULT_MESSAGE: Record<string, { label: string; className: string }> = {
+  REPRODUCED: { label: '✓ Bug reproduced successfully', className: 'text-green-700 dark:text-green-400' },
+  NOT_REPRODUCED: { label: 'Bug could not be reproduced', className: 'text-amber-700 dark:text-amber-400' },
+  INCONCLUSIVE: { label: 'Reproduction was inconclusive', className: 'text-black/60 dark:text-white/60' },
+};
+
+const REPRODUCTION_POLL_INTERVAL_MS = 2000;
+
+function ReproductionTab({ incidentId }: { incidentId: string }) {
+  const [history, setHistory] = useState<ReproductionRun[] | null>(null);
+  const [selected, setSelected] = useState<ReproductionRun | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopPolling() {
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+  }
+
+  async function loadHistory(selectId?: string) {
+    try {
+      const list = await api.listIncidentReproductionRuns(incidentId);
+      setHistory(list);
+      const target = selectId ? list.find((r) => r.id === selectId) : list[0];
+      if (target) setSelected(target);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load reproduction runs');
+    }
+  }
+
+  useEffect(() => {
+    loadHistory();
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incidentId]);
+
+  function startPolling(runId: string) {
+    stopPolling();
+    pollTimer.current = setInterval(async () => {
+      try {
+        const run = await api.getReproductionRun(runId);
+        setSelected(run);
+        if (run.status === 'COMPLETED' || run.status === 'FAILED') {
+          stopPolling();
+          loadHistory(runId);
+        }
+      } catch {
+        stopPolling();
+      }
+    }, REPRODUCTION_POLL_INTERVAL_MS);
+  }
+
+  async function handleReproduce() {
+    setError(null);
+    setStarting(true);
+    try {
+      const { id } = await api.reproduceIncident(incidentId);
+      const run = await api.getReproductionRun(id);
+      setSelected(run);
+      startPolling(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start reproduction');
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  if (history === null && !error) {
+    return <p className="text-sm text-black/50 dark:text-white/50">Loading...</p>;
+  }
+
+  const inProgress = Boolean(selected && selected.status !== 'COMPLETED' && selected.status !== 'FAILED');
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Reproduction</h2>
+        <button
+          onClick={handleReproduce}
+          disabled={starting || inProgress}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {starting || inProgress ? 'Reproducing...' : 'Reproduce Bug'}
+        </button>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {selected && <ReproductionRunView run={selected} />}
+
+      {!selected && !starting && (
+        <p className="text-sm text-black/50 dark:text-white/50">
+          No reproduction run has been started for this incident yet.
+        </p>
+      )}
+
+      {history && history.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-medium text-black/50 dark:text-white/50">Reproduction History</h2>
+          <div className="flex flex-col divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
+            {history.map((run, i) => (
+              <button
+                key={run.id}
+                onClick={() => {
+                  stopPolling();
+                  setSelected(run);
+                }}
+                className={`flex items-center justify-between px-4 py-3 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 ${selected?.id === run.id ? 'bg-black/5 dark:bg-white/5' : ''}`}
+              >
+                <span>
+                  Run #{history.length - i} · {run.status}
+                  {run.result && ` · ${run.result}`}
+                </span>
+                <span className="flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
+                  {run.targetCommitSha && <span className="font-mono">{run.targetCommitSha.slice(0, 7)}</span>}
+                  <span>{formatRelativeTime(run.createdAt)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReproductionRunView({ run }: { run: ReproductionRun }) {
+  if (run.status === 'FAILED') {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+        <p className="font-medium">Reproduction pipeline failed.</p>
+        {run.errorMessage && <p className="mt-1">{run.errorMessage}</p>}
+      </div>
+    );
+  }
+
+  if (run.status !== 'COMPLETED') {
+    return <p className="text-sm text-black/50 dark:text-white/50">{REPRODUCTION_STAGE_LABEL[run.status] ?? run.status}</p>;
+  }
+
+  const resultInfo = run.result ? REPRODUCTION_RESULT_MESSAGE[run.result] : null;
+
+  return (
+    <div className="flex flex-col gap-6">
+      {resultInfo && (
+        <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+          <p className={`text-sm font-medium ${resultInfo.className}`}>{resultInfo.label}</p>
+          {run.result === 'INCONCLUSIVE' && run.errorMessage && (
+            <p className="mt-1 text-xs text-black/50 dark:text-white/50">{run.errorMessage}</p>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 rounded-lg border border-black/10 p-4 text-sm dark:border-white/10 sm:grid-cols-3">
+        <Field label="Result" value={run.result ?? 'Unknown'} />
+        <Field label="Target Commit" value={run.targetCommitSha?.slice(0, 12) ?? '—'} mono />
+        <Field label="Exit Code" value={run.exitCode != null ? String(run.exitCode) : '—'} mono />
+        <Field label="Duration" value={run.durationMs != null ? `${(run.durationMs / 1000).toFixed(2)}s` : '—'} />
+        <Field label="Created" value={new Date(run.createdAt).toLocaleString()} />
+        <Field label="Completed" value={run.completedAt ? new Date(run.completedAt).toLocaleString() : '—'} />
+      </div>
+
+      {run.generatedTest && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Generated Test</h3>
+          <p className="font-mono text-xs text-black/60 dark:text-white/60">{run.testFilePath}</p>
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-4 font-mono text-xs leading-relaxed dark:bg-white/10">
+            {run.generatedTest}
+          </pre>
+          {run.testExplanation && (
+            <div className="rounded-lg border border-black/10 p-3 text-sm dark:border-white/10">
+              <p className="text-xs font-medium uppercase tracking-wide text-black/40 dark:text-white/40">
+                AI-generated reproduction hypothesis
+              </p>
+              <p className="mt-1 text-black/70 dark:text-white/70">{run.testExplanation}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(run.stdout || run.stderr) && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-black/50 dark:text-white/50">Execution Output</h3>
+          {run.stdout && (
+            <div>
+              <p className="text-xs text-black/50 dark:text-white/50">stdout</p>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-3 font-mono text-xs leading-relaxed dark:bg-white/10">
+                {run.stdout}
+              </pre>
+            </div>
+          )}
+          {run.stderr && (
+            <div>
+              <p className="text-xs text-black/50 dark:text-white/50">stderr</p>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/5 p-3 font-mono text-xs leading-relaxed dark:bg-white/10">
+                {run.stderr}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

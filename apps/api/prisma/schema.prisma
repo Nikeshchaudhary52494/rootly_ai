@@ -139,6 +139,7 @@ model Incident {
   errorEvents ErrorEvent[]
   codeContext IncidentCodeContext?
   investigations Investigation[]
+  reproductionRuns ReproductionRun[]
 
   @@unique([projectId, environmentId, fingerprint])
   @@index([projectId, environmentId, status])
@@ -313,6 +314,7 @@ model Investigation {
   incident   Incident                  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
   hypotheses InvestigationHypothesis[]
   evidence   InvestigationEvidence[]
+  reproductionRuns ReproductionRun[]
 
   @@index([incidentId])
   @@index([incidentId, createdAt])
@@ -382,4 +384,78 @@ model InvestigationEvidence {
 
   @@index([investigationId])
   @@index([hypothesisId])
+}
+
+enum ReproductionStatus {
+  PENDING
+  GENERATING_TEST
+  CREATING_SANDBOX
+  CHECKING_OUT
+  INSTALLING
+  RUNNING
+  CLASSIFYING
+  COMPLETED
+  FAILED
+}
+
+enum ReproductionResult {
+  REPRODUCED
+  NOT_REPRODUCED
+  INCONCLUSIVE
+}
+
+model ReproductionRun {
+  id              String @id @default(uuid())
+  incidentId      String
+  investigationId String
+
+  status ReproductionStatus @default(PENDING)
+  result ReproductionResult?
+
+  generatedTest        String?
+  testFilePath         String?
+  testExplanation      String?
+
+  targetCommitSha String?
+
+  stdout     String?
+  stderr     String?
+  exitCode   Int?
+  durationMs Int?
+
+  errorMessage String?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  incident      Incident           @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  investigation Investigation      @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+  tests         ReproductionTest[]
+
+  @@index([incidentId])
+  @@index([investigationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ReproductionTest {
+  id                String @id @default(uuid())
+  reproductionRunId String
+
+  filePath  String
+  testName  String
+  language  String
+  framework String
+
+  content     String
+  explanation String?
+
+  createdAt DateTime @default(now())
+
+  reproductionRun ReproductionRun @relation(fields: [reproductionRunId], references: [id], onDelete: Cascade)
+
+  @@index([reproductionRunId])
 }

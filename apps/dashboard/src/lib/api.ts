@@ -14,6 +14,7 @@ import type {
   Paginated,
   Project,
   Repository,
+  ReproductionRun,
 } from '@incident-ai/shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -145,4 +146,10 @@ export const api = {
   getInvestigation: (investigationId: string) => request<InvestigationDetail>(`/investigations/${investigationId}`),
   listIncidentInvestigations: (incidentId: string) =>
     request<InvestigationSummary[]>(`/incidents/${incidentId}/investigations`),
+
+  reproduceIncident: (incidentId: string) =>
+    request<{ id: string; status: string }>(`/incidents/${incidentId}/reproduce`, { method: 'POST' }),
+  getReproductionRun: (runId: string) => request<ReproductionRun>(`/reproduction-runs/${runId}`),
+  listIncidentReproductionRuns: (incidentId: string) =>
+    request<ReproductionRun[]>(`/incidents/${incidentId}/reproduction-runs`),
 };
